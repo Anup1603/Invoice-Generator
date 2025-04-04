@@ -334,7 +334,7 @@ function InvoicePreview({
               fontSize: matchesSM ? "0.875rem" : "1rem",
             }}
           >
-            Total Taxable Value: ₹{(data.totals?.subtotal || 0).toFixed(2)}
+            Total Value: ₹{(data.totals?.subtotal || 0).toFixed(2)}
           </Typography>
         </Box>
       </Paper>
@@ -390,6 +390,32 @@ function InvoicePreview({
                   sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
                 >
                   ₹{(data.totals?.gst || 0).toFixed(2)}
+                </TableCell>
+              </TableRow>
+              <TableRow sx={{ backgroundColor: "action.hover" }}>
+                <TableCell
+                  sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
+                >
+                  Net total
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
+                >
+                  ₹{(data.totals?.grandTotal || 0).toFixed(2)}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell
+                  sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
+                >
+                  Add/Less Adjustments
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
+                >
+                  ₹{(data.totals?.addLessAdjustments || 0).toFixed(2)}
                 </TableCell>
               </TableRow>
               <TableRow sx={{ backgroundColor: "action.hover" }}>

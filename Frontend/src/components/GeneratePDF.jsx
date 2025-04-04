@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "flex-end",
     fontSize: 14,
-    color: "#015401",
+    color: "#003300",
   },
   gstSection: {
     marginBottom: 5,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#015401",
+    color: "#003300",
     marginBottom: 15,
   },
   invoiceInfo: {
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   fallbackCompanyName: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#015401",
+    color: "#003300",
   },
 });
 
@@ -310,7 +310,7 @@ const GeneratePDF = memo(({ data }) => {
             <View style={styles.column}>
               <Text style={styles.sectionTitle}>Billed to:</Text>
               <View style={styles.sectionContent}>
-                <Text style={{ fontWeight: "bold", color: "#015401" }}>
+                <Text style={{ fontWeight: "bold", color: "#003300" }}>
                   {data.billedTo?.companyName || "N/A"}
                 </Text>
                 <Text>{data.billedTo?.address || "N/A"}</Text>
@@ -330,7 +330,7 @@ const GeneratePDF = memo(({ data }) => {
             <View style={styles.column}>
               <Text style={styles.sectionTitle}>Billed by:</Text>
               <View style={styles.sectionContent}>
-                <Text style={{ fontWeight: "bold", color: "#015401" }}>
+                <Text style={{ fontWeight: "bold", color: "#003300" }}>
                   {data.billedBy?.companyName || "N/A"}
                 </Text>
                 <Text>{data.billedBy?.address || "N/A"}</Text>
@@ -551,7 +551,7 @@ const GeneratePDF = memo(({ data }) => {
               style={{
                 fontWeight: "bold",
                 textAlign: "right",
-                color: "#015401",
+                color: "#003300",
               }}
             >
               Authorized Signature

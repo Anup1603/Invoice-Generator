@@ -82,8 +82,8 @@ const initialInvoiceData = {
       description:
         "Google Workspace [Business Starter] Subscription Term: Annual Commitment, Service Period: 1st April 2025 to 31st March 2026",
       quantity: 4,
-      unitPrice: 9999.0,
-      amount: 39996.0,
+      unitPrice: 1000.0,
+      amount: 4000.0,
     },
   ],
   paymentDetails: {
@@ -160,9 +160,28 @@ function App() {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              <img src="/Anocloud logo.png" alt="Logo" style={{ height: 40 }} />
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{
+                flexGrow: 1,
+                display: "flex",
+                alignItems: "center",
+                height: "100%",
+              }}
+            >
+              <img
+                src="/Anocloud logo.png"
+                alt="Logo"
+                style={{
+                  height: 45,
+                  objectFit: "contain",
+                  background: "transparent",
+                  display: "block",
+                }}
+              />
             </Typography>
+
             {!isMobile && (
               <>
                 <Button color="inherit">Dashboard</Button>
