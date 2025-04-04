@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   CssBaseline,
@@ -47,8 +47,8 @@ const initialInvoiceData = {
   billedTo: {
     companyName: "xxxxxxxxxxx TECH PRIVATE LIMITED",
     address: "56/9 Block A xxxxxxx road xxxxxxxx state PIN - xxxxxxxx",
-    gstin: "27AAIxxxxxxxxx",
-    contact: "Axxxxxx Gxxxxxx",
+    gstin: "28ZIxxxxxxxxx",
+    contact: "Dxxxxxx Axxxxxx",
     phone: "+91-9xxxx56xxx",
     domain: "example.com",
   },
@@ -62,10 +62,19 @@ const initialInvoiceData = {
   },
   invoiceDetails: {
     number: generateInvoiceNumber(),
-    date: new Date().toISOString().split("T")[0], // YYYY-MM-DD format
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0],
+    date: new Date().toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString(
+      "en-GB",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }
+    ),
   },
   items: [
     {
@@ -77,13 +86,6 @@ const initialInvoiceData = {
       amount: 39996.0,
     },
   ],
-  totals: {
-    subtotal: 39996.0,
-    discount: 0.0,
-    gst: 7199.28,
-    grandTotal: 47195.28,
-    addLessAdjustments: 0.0,
-  },
   paymentDetails: {
     accountName: "ANOCLOUD TECHNOLOGY SOLUTIONS LLP",
     accountNumber: "50200103310501",
@@ -94,60 +96,59 @@ const initialInvoiceData = {
   logo: "/Anocloud logo.png",
 };
 
+// Calculate initial totals
+const calculateTotals = (items) => {
+  const subtotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const gst = subtotal * 0.18;
+  const grandTotal = subtotal + gst;
+
+  return {
+    subtotal,
+    discount: 0.0,
+    gst,
+    grandTotal,
+    addLessAdjustments: 0.0,
+  };
+};
+
+initialInvoiceData.totals = calculateTotals(initialInvoiceData.items);
+
 function App() {
   const [invoiceData, setInvoiceData] = useState(initialInvoiceData);
   const [activeSection, setActiveSection] = useState(null);
-  const [draftData, setDraftData] = useState(
-    JSON.parse(JSON.stringify(initialInvoiceData))
-  );
+  const [draftData, setDraftData] = useState(null);
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  // Calculate totals whenever items change
+  // Update draft data when active section changes
   useEffect(() => {
-    const subtotal = draftData.items.reduce(
-      (sum, item) => sum + (parseFloat(item.amount) || 0),
-      0
-    );
-    const gst = subtotal * 0.18;
-    const grandTotal = subtotal + gst;
+    if (activeSection) {
+      setDraftData({
+        ...invoiceData,
+        [activeSection]: JSON.parse(JSON.stringify(invoiceData[activeSection])),
+      });
+    }
+  }, [activeSection, invoiceData]);
 
-    setDraftData((prev) => ({
-      ...prev,
-      totals: {
-        ...prev.totals,
-        subtotal,
-        gst,
-        grandTotal,
-      },
-    }));
-  }, [draftData.items]);
+  const handleSave = (updatedData) => {
+    // Recalculate totals if items were updated
+    if (activeSection === "items") {
+      updatedData.totals = calculateTotals(updatedData.items);
+    }
 
-  const handleUpdate = useCallback((section, data) => {
-    setDraftData((prev) => ({
-      ...prev,
-      [section]: data,
-    }));
-  }, []);
-
-  const handleSave = useCallback(() => {
-    setInvoiceData(draftData);
+    setInvoiceData(updatedData);
     setActiveSection(null);
-  }, [draftData]);
+    setDraftData(null);
+  };
 
-  const handleCancel = useCallback(() => {
-    setDraftData(invoiceData);
+  const handleCancel = () => {
     setActiveSection(null);
-  }, [invoiceData]);
-
-  const previewData = useMemo(() => {
-    return activeSection ? draftData : invoiceData;
-  }, [activeSection, draftData, invoiceData]);
+    setDraftData(null);
+  };
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-        {/* Navbar */}
         <AppBar position="static">
           <Toolbar>
             <IconButton
@@ -175,9 +176,7 @@ function App() {
           </Toolbar>
         </AppBar>
 
-        {/* Main Content */}
         <Box sx={{ display: "flex", flex: 1, overflow: "hidden" }}>
-          {/* Form Panel (Left) */}
           <Box
             sx={{
               width: isMobile ? (activeSection ? "100%" : "0") : "44%",
@@ -191,8 +190,7 @@ function App() {
             {activeSection ? (
               <InvoiceForm
                 activeSection={activeSection}
-                data={draftData}
-                onUpdate={handleUpdate}
+                data={draftData || invoiceData}
                 onSave={handleSave}
                 onCancel={handleCancel}
               />
@@ -218,7 +216,6 @@ function App() {
             )}
           </Box>
 
-          {/* Preview Panel (Right) */}
           <Box
             sx={{
               flex: 1,
@@ -229,7 +226,7 @@ function App() {
             }}
           >
             <InvoicePreview
-              data={previewData}
+              data={invoiceData}
               onSectionClick={setActiveSection}
               isMobile={isMobile}
             />
