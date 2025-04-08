@@ -13,7 +13,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  IconButton,
   Alert,
   useMediaQuery,
 } from "@mui/material";
@@ -29,19 +28,6 @@ function InvoicePreview({
   const [pdfError, setPdfError] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const matchesSM = useMediaQuery((theme) => theme.breakpoints.down("sm"));
-
-  const renderEditButton = (section) => (
-    <IconButton
-      size="small"
-      onClick={(e) => {
-        e.stopPropagation();
-        onSectionClick(section);
-      }}
-      sx={{ ml: 1 }}
-    >
-      <Edit fontSize="small" />
-    </IconButton>
-  );
 
   const pdfDocument = <GeneratePDF data={data} />;
 
@@ -66,6 +52,16 @@ function InvoicePreview({
           >
             TAX INVOICE
           </Typography>
+          {!isMobile && onSectionClick && (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => onSectionClick("invoiceDetails")}
+              startIcon={<Edit />}
+            >
+              Edit
+            </Button>
+          )}
           {isMobile && onSectionClick && (
             <Button
               variant="outlined"
@@ -119,11 +115,21 @@ function InvoicePreview({
               sx={{
                 color: "primary.main",
                 fontSize: matchesSM ? "1rem" : "1.25rem",
+                marginRight: 1,
               }}
             >
               Billed to:
             </Typography>
-            {!isMobile && onSectionClick && renderEditButton("billedTo")}
+            {!isMobile && onSectionClick && (
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => onSectionClick("billedTo")}
+                startIcon={<Edit />}
+              >
+                Edit
+              </Button>
+            )}
           </Box>
           <Typography
             variant="body1"
@@ -239,11 +245,21 @@ function InvoicePreview({
             sx={{
               color: "primary.main",
               fontSize: matchesSM ? "1rem" : "1.25rem",
+              marginRight: 1,
             }}
           >
             PRODUCT/SERVICE DETAILS
           </Typography>
-          {!isMobile && onSectionClick && renderEditButton("items")}
+          {!isMobile && onSectionClick && (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => onSectionClick("items")}
+              startIcon={<Edit />}
+            >
+              Edit
+            </Button>
+          )}
         </Box>
         <TableContainer>
           <Table size="small" sx={{ mt: 2 }}>
