@@ -24,7 +24,7 @@ const completeProfile = async (req, res, next) => {
 
         // Find company belonging to the logged-in user
         const company = await Company.findOneAndUpdate(
-            { user: req.userId },
+            { user: req.user._id },
             {
                 companyName,
                 phoneNumber,
@@ -33,7 +33,7 @@ const completeProfile = async (req, res, next) => {
                 bankDetails,
                 website,
                 logo,
-                status: 'complete' // Mark profile as complete
+                status: 'complete'
             },
             { new: true, runValidators: true }
         );
@@ -69,7 +69,7 @@ const completeProfile = async (req, res, next) => {
 // Get company profile
 const getProfile = async (req, res, next) => {
     try {
-        const company = await Company.findOne({ user: req.userId });
+        const company = await Company.findOne({ user: req.user._id });
 
         if (!company) {
             return res.status(404).json({
@@ -104,7 +104,7 @@ const updateProfile = async (req, res, next) => {
         }
 
         const company = await Company.findOneAndUpdate(
-            { user: req.userId },
+            { user: req.user._id },
             updates,
             { new: true, runValidators: true }
         );

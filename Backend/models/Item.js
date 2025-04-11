@@ -27,8 +27,6 @@ const itemSchema = new mongoose.Schema({
     }
 }, {
     timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
 });
 
 // Add index for better query performance
