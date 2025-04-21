@@ -22,6 +22,7 @@ const CompanySchema = new mongoose.Schema({
         country: String
     },
     bankDetails: {
+        accountName: String,
         accountNumber: String,
         bankName: String,
         branch: String,
@@ -31,6 +32,15 @@ const CompanySchema = new mongoose.Schema({
         type: String,
         trim: true,
         uppercase: true
+    },
+    panNumber: {
+        type: String,
+        trim: true,
+        uppercase: true
+    },
+    directorName: {
+        type: String,
+        trim: true
     },
     phoneNumber: {
         type: String,
