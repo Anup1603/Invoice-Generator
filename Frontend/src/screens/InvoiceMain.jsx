@@ -4,16 +4,9 @@ import {
   CssBaseline,
   ThemeProvider,
   createTheme,
-  AppBar,
-  Toolbar,
-  IconButton,
   Typography,
-  Button,
   useMediaQuery,
-  CircularProgress,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import LogoutIcon from "@mui/icons-material/Logout";
 import InvoiceForm from "../components/InvoiceForm";
 import InvoicePreview from "../components/InvoicePreview";
 import { generateInvoiceNumber } from "../utils/invoiceNumber";
@@ -121,7 +114,6 @@ function InvoiceMain() {
   const [activeSection, setActiveSection] = useState(null);
   const [draftData, setDraftData] = useState(null);
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const [loading, setLoading] = useState(false);
 
   // Update draft data when active section changes
   useEffect(() => {
@@ -156,37 +148,6 @@ function InvoiceMain() {
       navigate("/auth/login");
     }
   }, [token]);
-
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "70vh",
-          gap: 2,
-        }}
-      >
-        <CircularProgress size={60} thickness={4} />
-        <Typography variant="h6" color="text.secondary">
-          Logout ...
-        </Typography>
-      </Box>
-    );
-  }
-
-  const handleLogout = () => {
-    setLoading(true);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
-    setTimeout(() => {
-      navigate("/auth/login");
-      setLoading(false);
-    }, 300);
-  };
 
   return (
     <ThemeProvider theme={theme}>

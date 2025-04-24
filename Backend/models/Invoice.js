@@ -36,13 +36,13 @@ const InvoiceSchema = new mongoose.Schema({
         },
         quantity: {
             type: Number,
-            // required: true,
+            required: true,
             min: 1
         },
 
         priceAtTime: {
             type: Number,
-            required: true
+            // required: true
         }
     }],
     discount: {

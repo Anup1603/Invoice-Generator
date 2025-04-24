@@ -22,6 +22,7 @@ import {
 } from "@mui/icons-material";
 import axios from "../axiosInstence";
 import { deepPurple } from "@mui/material/colors";
+import { fetchCompanyDetails } from "../invoiceApi";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -51,19 +52,18 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
 
+  const fetchCompanyData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetchCompanyDetails();
+      setFormData(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch company data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchCompanyData = async () => {
-      try {
-        setIsLoading(true);
-        const response = await axios.get("api/company/");
-        setFormData(response.data.data);
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch company data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchCompanyData();
   }, []);
 
@@ -165,7 +165,7 @@ const Profile = () => {
                 color: "#fff",
               }}
             >
-              {isLoading ? <CircularProgress size={24} /> : "Save Changes"}
+              Save Changes
             </Button>
           )}
         </Box>
