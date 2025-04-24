@@ -12,6 +12,9 @@ import {
   Avatar,
   Divider,
   IconButton,
+  useMediaQuery,
+  useTheme,
+  Stack,
 } from "@mui/material";
 import {
   Business,
@@ -19,13 +22,18 @@ import {
   Info,
   Edit,
   Save,
+  ArrowBack,
 } from "@mui/icons-material";
 import axios from "../axiosInstence";
 import { deepPurple } from "@mui/material/colors";
 import { fetchCompanyDetails } from "../invoiceApi";
 
 const Profile = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     companyName: "",
     address: {
@@ -48,6 +56,7 @@ const Profile = () => {
     phoneNumber: "",
     website: "",
   });
+
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
@@ -63,6 +72,7 @@ const Profile = () => {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     fetchCompanyData();
   }, []);
@@ -127,46 +137,86 @@ const Profile = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
+    <Container
+      maxWidth="lg"
+      sx={{
+        mt: isMobile ? 2 : 4,
+        mb: isMobile ? 2 : 4,
+        p: isMobile ? 1 : 2,
+      }}
+    >
+      <Paper
+        elevation={isMobile ? 1 : 4}
+        sx={{
+          p: isMobile ? 2 : 4,
+          borderRadius: 2,
+        }}
+      >
+        {/* Header Section */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            mb: 4,
+            mb: isMobile ? 2 : 4,
+            flexDirection: isMobile ? "column" : "row",
+            gap: isMobile ? 2 : 0,
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center" }}>
+            {isMobile && (
+              <IconButton onClick={() => navigate(-1)} sx={{ mr: 1 }}>
+                <ArrowBack />
+              </IconButton>
+            )}
             <Avatar sx={{ bgcolor: deepPurple[500], mr: 2 }}>
               <Business />
             </Avatar>
-            <Typography variant="h4" component="h1">
+            <Typography variant={isMobile ? "h5" : "h4"} component="h1">
               Company Profile
             </Typography>
           </Box>
+
           {!isEditing ? (
             <Button
               variant="contained"
               startIcon={<Edit />}
               onClick={() => setIsEditing(true)}
-              style={{ backgroundColor: "#ff4d4d", color: "#fff" }}
+              sx={{
+                bgcolor: "#ff4d4d",
+                "&:hover": { bgcolor: "#ff3333" },
+                width: isMobile ? "100%" : "auto",
+              }}
             >
               Edit Profile
             </Button>
           ) : (
-            <Button
-              variant="contained"
-              startIcon={<Save />}
-              onClick={handleSubmit}
-              disabled={isLoading}
-              style={{
-                backgroundColor: "#ff8000",
-                color: "#fff",
-              }}
+            <Stack
+              direction={isMobile ? "column" : "row"}
+              spacing={isMobile ? 1 : 2}
+              width={isMobile ? "100%" : "auto"}
             >
-              Save Changes
-            </Button>
+              <Button
+                variant="outlined"
+                onClick={() => setIsEditing(false)}
+                sx={{ width: isMobile ? "100%" : "auto" }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<Save />}
+                onClick={handleSubmit}
+                disabled={isLoading}
+                sx={{
+                  bgcolor: "#ff8000",
+                  "&:hover": { bgcolor: "#e67300" },
+                  width: isMobile ? "100%" : "auto",
+                }}
+              >
+                Save Changes
+              </Button>
+            </Stack>
           )}
         </Box>
 
@@ -174,7 +224,13 @@ const Profile = () => {
           <Typography
             color="error"
             align="center"
-            sx={{ mb: 3, p: 2, bgcolor: "#ffeeee", borderRadius: 1 }}
+            sx={{
+              mb: 3,
+              p: 2,
+              bgcolor: "#ffeeee",
+              borderRadius: 1,
+              fontSize: isMobile ? "0.875rem" : "1rem",
+            }}
           >
             {error}
           </Typography>
@@ -182,14 +238,21 @@ const Profile = () => {
 
         <form onSubmit={handleSubmit}>
           {/* Company Information Section */}
-          <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+          <Paper
+            elevation={isMobile ? 0 : 2}
+            sx={{
+              p: isMobile ? 2 : 3,
+              mb: isMobile ? 2 : 4,
+              border: isMobile ? "1px solid #eee" : "none",
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
               <Business color="primary" sx={{ mr: 1 }} />
               <Typography variant="h6">Company Information</Typography>
             </Box>
             <Divider sx={{ mb: 3 }} />
 
-            <Grid container spacing={3}>
+            <Grid container spacing={isMobile ? 1 : 3}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -198,7 +261,7 @@ const Profile = () => {
                   value={formData.companyName}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                   InputProps={{ readOnly: true }}
                 />
@@ -212,9 +275,8 @@ const Profile = () => {
                   value={formData.directorName}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
-                  // InputProps={{ readOnly: true && !isEditing }}
                 />
               </Grid>
 
@@ -226,7 +288,7 @@ const Profile = () => {
                   value={formData.phoneNumber}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
@@ -239,12 +301,12 @@ const Profile = () => {
                   value={formData.address.street}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   fullWidth
                   label="City"
@@ -252,12 +314,12 @@ const Profile = () => {
                   value={formData.address.city}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   fullWidth
                   label="State"
@@ -265,12 +327,12 @@ const Profile = () => {
                   value={formData.address.state}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   fullWidth
                   label="Postal Code"
@@ -278,7 +340,7 @@ const Profile = () => {
                   value={formData.address.postalCode}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
@@ -291,7 +353,7 @@ const Profile = () => {
                   value={formData.address.country}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
@@ -299,14 +361,21 @@ const Profile = () => {
           </Paper>
 
           {/* Bank Details Section */}
-          <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+          <Paper
+            elevation={isMobile ? 0 : 2}
+            sx={{
+              p: isMobile ? 2 : 3,
+              mb: isMobile ? 2 : 4,
+              border: isMobile ? "1px solid #eee" : "none",
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
               <AccountBalance color="primary" sx={{ mr: 1 }} />
               <Typography variant="h6">Bank Details</Typography>
             </Box>
             <Divider sx={{ mb: 3 }} />
 
-            <Grid container spacing={3}>
+            <Grid container spacing={isMobile ? 1 : 3}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
@@ -315,7 +384,7 @@ const Profile = () => {
                   value={formData.bankDetails.accountName}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
@@ -327,7 +396,7 @@ const Profile = () => {
                   value={formData.bankDetails.accountNumber}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
@@ -340,7 +409,7 @@ const Profile = () => {
                   value={formData.bankDetails.bankName}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
@@ -353,7 +422,7 @@ const Profile = () => {
                   value={formData.bankDetails.branch}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
@@ -366,7 +435,7 @@ const Profile = () => {
                   value={formData.bankDetails.ifscCode}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
@@ -374,14 +443,21 @@ const Profile = () => {
           </Paper>
 
           {/* Tax Information Section */}
-          <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+          <Paper
+            elevation={isMobile ? 0 : 2}
+            sx={{
+              p: isMobile ? 2 : 3,
+              mb: isMobile ? 2 : 4,
+              border: isMobile ? "1px solid #eee" : "none",
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
               <Info color="primary" sx={{ mr: 1 }} />
               <Typography variant="h6">Tax Information</Typography>
             </Box>
             <Divider sx={{ mb: 3 }} />
 
-            <Grid container spacing={3}>
+            <Grid container spacing={isMobile ? 1 : 3}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
@@ -390,7 +466,7 @@ const Profile = () => {
                   value={formData.gstNumber}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
@@ -403,7 +479,7 @@ const Profile = () => {
                   value={formData.panNumber}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>
@@ -416,7 +492,7 @@ const Profile = () => {
                   value={formData.website}
                   onChange={handleChange}
                   variant="outlined"
-                  size="medium"
+                  size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
                 />
               </Grid>

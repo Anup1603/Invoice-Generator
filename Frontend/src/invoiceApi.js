@@ -1,19 +1,7 @@
 import axios from "./axiosInstence"
 
-// Fetch all invoice data
-export const fetchInvoiceData = async (invoiceId = null) => {
-    try {
-        const endpoint = invoiceId
-            ? `/api/invoices/${invoiceId}`
-            : `/api/invoices`;
-        const response = await axios.get(endpoint);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching invoice data:', error);
-        throw error;
-    }
-};
 
+// TODO: company details part
 // Fetch company details
 export const fetchCompanyDetails = async () => {
     try {
@@ -24,6 +12,30 @@ export const fetchCompanyDetails = async () => {
         throw error;
     }
 };
+
+
+// TODO: Invoice parts
+// Fetch all invoice data
+export const fetchInvoiceData = async (invoiceId = null) => {
+    try {
+        const endpoint = invoiceId ? `/api/invoices/${invoiceId}` : `/api/invoices/`;
+        const response = await axios.get(endpoint);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching invoice data:', error);
+        throw error;
+    }
+};
+
+export const updateInvoiceStatus = async (invoiceId, newStatus) => {
+    try {
+        const response = await axios.put(`/api/invoices/${invoiceId}/status`, { status: newStatus });
+        return response.data;
+    } catch (error) {
+        console.error('Error updating invoice status:', error);
+        throw error;
+    }
+}
 
 // Create new invoice
 export const createInvoice = async (invoiceData) => {
@@ -36,20 +48,41 @@ export const createInvoice = async (invoiceData) => {
     }
 };
 
-// Add/update invoice item
-export const saveInvoiceItem = async (itemData) => {
+
+// TODO: Invoice item parts
+// Add invoice item
+export const createInvoiceItem = async (itemData) => {
     try {
-        const endpoint = itemData.id
-            ? `/api/items/${itemData.id}`
-            : `/api/items/`;
-        const method = itemData.id ? 'put' : 'post';
-        const response = await axios[method](endpoint, itemData);
+        const response = await axios.post(`/api/items`, itemData);
         return response.data;
     } catch (error) {
         console.error('Error saving invoice item:', error);
         throw error;
     }
 };
+
+// Get all invoice items
+export const fetchInvoiceItems = async () => {
+    try {
+        const response = await axios.get(`/api/items/`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching invoice items:', error);
+        throw error;
+    }
+};
+
+
+// update invoice item
+export const updateInvoiceItem = async (itemId, itemData) => {
+    try {
+        const response = await axios.put(`/api/items/${itemId}`, itemData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating invoice item:', error);
+        throw error;
+    }
+}
 
 // Delete invoice item
 export const deleteInvoiceItem = async (itemId) => {
@@ -62,10 +95,12 @@ export const deleteInvoiceItem = async (itemId) => {
     }
 };
 
+
+// TODO: User parts
 // Generate PDF
 export const generateInvoicePdf = async (invoiceId) => {
     try {
-        const response = await axios.get(`/api/invoices/`, {
+        const response = await axios.get(`/api/invoices/ `, {
             responseType: 'blob'
         });
         return response.data;

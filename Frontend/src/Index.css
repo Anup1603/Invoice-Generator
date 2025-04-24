@@ -1,25 +1,27 @@
-/* @import "tailwindcss"; */
+/* Default scrollbar for large screens */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 80px;
+  }
 
-/* width */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 80px;
+  ::-webkit-scrollbar-track {
+    background: #222a35;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #836df7;
+    border-radius: 6px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6a5bbd;
+  }
 }
 
-/* Track */
-::-webkit-scrollbar-track {
-  background: #222a35;
-  /* background: #fff; */
-  /* border-radius: 6px; */
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: #836df7;
-  border-radius: 6px;
-}
-
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-  background: #6a5bbd;
+/* Hide scrollbar for small screens */
+@media (max-width: 767px) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
 }

@@ -7,6 +7,7 @@ import InvoiceMain from "./screens/Invoicemain";
 import Profile from "./screens/Profile";
 import InvoiceBoard from "./screens/InvoiceBoard";
 import InvoiceList from "./screens/InvoiceList";
+import CreateProduct from "./screens/CreateProduct";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="create-invoice" element={<InvoiceMain />} />
           <Route path="profile" element={<Profile />} />
           <Route path="invoices" element={<InvoiceList />} />
+          <Route path="create-product" element={<CreateProduct />} />
         </Route>
       </Routes>
     </BrowserRouter>
