@@ -48,6 +48,30 @@ export const createInvoice = async (invoiceData) => {
     }
 };
 
+export const fetchLastInvoiceNumber = async () => {
+    try {
+        const response = await axios.get(`/api/invoices/`);
+        const invoices = response.data;
+
+        if (invoices.length > 0) {
+            const lastInvoice = invoices[invoices.length - 1];
+            const invoiceNumber = lastInvoice.invoiceNumber;
+
+            // Extract the last part after the last slash '/'
+            const parts = invoiceNumber.split('/');
+            const numberPart = parts[parts.length - 1]; // "0007"
+
+            console.log(numberPart)
+            return numberPart;
+        } else {
+            return null; // No invoices found
+        }
+    } catch (error) {
+        console.error('Error fetching last invoice number:', error);
+        throw error;
+    }
+};
+
 
 // TODO: Invoice item parts
 // Add invoice item

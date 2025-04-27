@@ -24,10 +24,45 @@ function InvoicePreview({
   data = {},
   onSectionClick = () => {},
   isMobile = false,
+  onGeneratePDF,
+  isGenerating,
 }) {
   const [pdfError, setPdfError] = useState(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   const matchesSM = useMediaQuery((theme) => theme.breakpoints.down("sm"));
+
+  const formatAddress = (address) => {
+    if (!address) return "N/A";
+    if (typeof address === "string") return address;
+    return `${address.street}, ${address.city}, ${address.state}, ${address.postalCode}, ${address.country}`;
+  };
+
+  const isFormValid = () => {
+    return (
+      data.billedTo?.companyName &&
+      data.billedTo?.address &&
+      data.billedTo?.gstin &&
+      data.billedTo?.contact &&
+      data.billedTo?.phone &&
+      data.items?.length > 0 &&
+      data.invoiceDetails?.type &&
+      data.invoiceDetails?.date &&
+      data.invoiceDetails?.dueDate
+    );
+  };
+
+  const handlePdfGeneration = async () => {
+    if (!isFormValid()) {
+      setPdfError("Please fill all required fields before generating PDF");
+      return;
+    }
+
+    try {
+      setPdfError(null);
+      await onGeneratePDF();
+    } catch (error) {
+      setPdfError("Failed to generate PDF. Please try again.");
+    }
+  };
 
   const pdfDocument = <GeneratePDF data={data} />;
 
@@ -52,26 +87,15 @@ function InvoicePreview({
           >
             TAX INVOICE
           </Typography>
-          {!isMobile && onSectionClick && (
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => onSectionClick("invoiceDetails")}
-              startIcon={<Edit />}
-            >
-              Edit
-            </Button>
-          )}
-          {isMobile && onSectionClick && (
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => onSectionClick("invoiceDetails")}
-              startIcon={<Edit />}
-            >
-              Edit
-            </Button>
-          )}
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => onSectionClick("invoiceDetails")}
+            startIcon={<Edit />}
+            sx={{ display: isMobile ? "inline-flex" : "inline-flex" }}
+          >
+            Edit
+          </Button>
         </Box>
         <Box
           sx={{
@@ -85,16 +109,38 @@ function InvoicePreview({
             variant="body1"
             sx={{ fontSize: matchesSM ? "0.875rem" : "1rem" }}
           >
-            Invoice No: <strong>{data.invoiceDetails?.number || "N/A"}</strong>
+            Invoice No:{" "}
+            <strong>
+              ANO/
+              {data.invoiceDetails?.type || "N/A"}/
+              {data.invoiceDetails?.currentFY || "N/A"}/
+              {data.invoiceDetails?.number || "N/A"}
+            </strong>
           </Typography>
           <Typography
             variant="body1"
             sx={{ fontSize: matchesSM ? "0.875rem" : "1rem" }}
           >
-            Date: <strong>{data.invoiceDetails?.date || "N/A"}</strong>{" "}
-            {!matchesSM && "|"}
-            {matchesSM ? <br /> : " "}Due Date:{" "}
-            <strong>{data.invoiceDetails?.dueDate || "N/A"}</strong>
+            Type: <strong>{data.invoiceDetails?.type || "N/A"}</strong>
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{ fontSize: matchesSM ? "0.875rem" : "1rem" }}
+          >
+            Date:{" "}
+            <strong>
+              {new Date(data.invoiceDetails?.date).toLocaleDateString(
+                "en-IN"
+              ) || "N/A"}
+            </strong>
+            {!matchesSM && " | "}
+            {matchesSM ? <br /> : " "}
+            Due Date:{" "}
+            <strong>
+              {new Date(data.invoiceDetails?.dueDate).toLocaleDateString(
+                "en-IN"
+              ) || "N/A"}
+            </strong>
           </Typography>
         </Box>
       </Box>
@@ -120,7 +166,7 @@ function InvoicePreview({
             >
               Billed to:
             </Typography>
-            {!isMobile && onSectionClick && (
+            {!isMobile && (
               <Button
                 variant="outlined"
                 size="small"
@@ -139,13 +185,13 @@ function InvoicePreview({
               fontSize: matchesSM ? "0.875rem" : "1rem",
             }}
           >
-            {data.billedTo?.companyName || "N/A"}
+            {data.billedTo?.companyName || "Company Name"}
           </Typography>
           <Typography
             variant="body2"
             sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
           >
-            {data.billedTo?.address || "N/A"}
+            {formatAddress(data.billedTo?.address)}
           </Typography>
           <Typography
             variant="body2"
@@ -171,7 +217,7 @@ function InvoicePreview({
           >
             Domain: {data.billedTo?.domain || "N/A"}
           </Typography>
-          {isMobile && onSectionClick && (
+          {isMobile && (
             <Button
               variant="outlined"
               size="small"
@@ -250,7 +296,7 @@ function InvoicePreview({
           >
             PRODUCT/SERVICE DETAILS
           </Typography>
-          {!isMobile && onSectionClick && (
+          {!isMobile && (
             <Button
               variant="outlined"
               size="small"
@@ -331,7 +377,7 @@ function InvoicePreview({
             </TableBody>
           </Table>
         </TableContainer>
-        {isMobile && onSectionClick && (
+        {isMobile && (
           <Button
             variant="outlined"
             size="small"
@@ -473,10 +519,9 @@ function InvoicePreview({
           {[
             "Price will be valid for annual commit & annual payment only.",
             "No cancellation or partial upgradation is allowed.",
-            "Transfer token is mandatory for processing the order and customer registered country should be INDIA in customer's Panel.",
-            "Purchase order should be in the name of Anocloud Technology Solutions LLP only.",
-            "No of users and SKU should be same in Purchase order and customer's admin.",
-            "If Google makes any changes in terms of pricing, then pricing will be revised and informed.",
+            "Transfer token is mandatory for processing the order.",
+            "Purchase order should be in the name of our company only.",
+            "If vendor makes any changes in terms of pricing, then pricing will be revised and informed.",
           ].map((item, index) => (
             <ListItem key={index} sx={{ display: "list-item", py: 0 }}>
               <ListItemText
@@ -612,13 +657,13 @@ function InvoicePreview({
             fontSize: matchesSM ? "0.875rem" : "1rem",
           }}
         >
-          Vishal Kumar Gupta
+          {data.billedBy?.contact || "N/A"}
         </Typography>
         <Typography sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}>
           Director
         </Typography>
         <Typography sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}>
-          Anocloud Technology Solutions LLP
+          {data.billedBy?.companyName || "N/A"}
         </Typography>
       </Box>
 
@@ -631,18 +676,23 @@ function InvoicePreview({
         )}
         <PDFDownloadLink
           document={pdfDocument}
-          fileName={`invoice_${data.invoiceDetails?.number || "invoice"}.pdf`}
+          fileName={`invoice_ANO-${data.invoiceDetails?.type}-${data.invoiceDetails?.currentFY}-${data.invoiceDetails?.number}.pdf`}
+          onClick={(e) => {
+            if (!isFormValid()) {
+              e.preventDefault();
+              setPdfError(
+                "Please fill all required fields before generating PDF"
+              );
+            }
+          }}
         >
-          {({ loading }) => (
+          {({ loading, error }) => (
             <Button
               variant="contained"
               color="primary"
               startIcon={<PictureAsPdf />}
-              disabled={loading || isGenerating}
-              onClick={() => {
-                setIsGenerating(true);
-                setPdfError(null);
-              }}
+              disabled={!isFormValid() || loading || isGenerating}
+              onClick={handlePdfGeneration}
               fullWidth
               size={matchesSM ? "small" : "medium"}
             >

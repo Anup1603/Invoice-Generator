@@ -9,7 +9,7 @@ import {
   Image,
 } from "@react-pdf/renderer";
 
-// Register fonts
+// Register fonts (keep existing font registration)
 Font.register({
   family: "Roboto",
   fonts: [
@@ -24,13 +24,12 @@ Font.register({
   ],
 });
 
-// Register Noto Sans as a separate font family
 Font.register({
   family: "Noto Sans",
   src: "https://fonts.gstatic.com/s/notosans/v27/o-0IIpQlx3QUlC5A4PNr6zRF.ttf",
 });
 
-// PDF Styles
+// Keep all existing styles
 
 const styles = StyleSheet.create({
   page: {
@@ -244,6 +243,12 @@ const formatCurrency = (amount) => {
   );
 };
 
+const formatAddress = (address) => {
+  if (!address) return "N/A";
+  if (typeof address === "string") return address;
+  return `${address.street}, ${address.city}, ${address.state}, ${address.postalCode}, ${address.country}`;
+};
+
 const GeneratePDF = memo(({ data }) => {
   return (
     <Document>
@@ -252,17 +257,10 @@ const GeneratePDF = memo(({ data }) => {
         <View style={styles.header} fixed>
           <View style={styles.headerLeft}>
             {data.logo ? (
-              <Image
-                style={styles.logo}
-                src={
-                  typeof data.logo === "string"
-                    ? data.logo
-                    : { data: data.logo, format: "png" }
-                }
-              />
+              <Image style={styles.logo} src={data.logo} />
             ) : (
               <Text style={styles.fallbackCompanyName}>
-                {data.billedBy?.companyName}
+                {data.billedBy?.companyName || "N/A"}
               </Text>
             )}
           </View>
@@ -270,16 +268,6 @@ const GeneratePDF = memo(({ data }) => {
             <View style={styles.gstSection}>
               <Text>GSTIN: {data.billedBy?.gstin || "N/A"}</Text>
             </View>
-            {data.secondaryLogo && (
-              <Image
-                style={styles.secondaryLogo}
-                src={
-                  typeof data.secondaryLogo === "string"
-                    ? data.secondaryLogo
-                    : { data: data.secondaryLogo, format: "png" }
-                }
-              />
-            )}
           </View>
         </View>
 
@@ -288,19 +276,26 @@ const GeneratePDF = memo(({ data }) => {
           <Text style={styles.title}>TAX INVOICE</Text>
           <View style={styles.invoiceInfo}>
             <Text style={styles.leftText}>
-              Invoice No:{" "}
+              Invoice Number:{" "}
               <Text style={{ fontWeight: "bold" }}>
+                ANO/
+                {data.invoiceDetails?.type || "N/A"}/
+                {data.invoiceDetails?.currentFY || "N/A"}/
                 {data.invoiceDetails?.number || "N/A"}
               </Text>
             </Text>
             <Text style={styles.rightText}>
-              Invoice Date:{" "}
+              Date:{" "}
               <Text style={{ fontWeight: "bold" }}>
-                {data.invoiceDetails?.date || "N/A"}
+                {new Date(data.invoiceDetails?.date).toLocaleDateString(
+                  "en-GB"
+                ) || "N/A"}
               </Text>{" "}
               | Due Date:{" "}
               <Text style={{ fontWeight: "bold" }}>
-                {data.invoiceDetails?.dueDate || "N/A"}
+                {new Date(data.invoiceDetails?.dueDate).toLocaleDateString(
+                  "en-GB"
+                ) || "N/A"}
               </Text>
             </Text>
           </View>
@@ -313,7 +308,7 @@ const GeneratePDF = memo(({ data }) => {
                 <Text style={{ fontWeight: "bold", color: "#003300" }}>
                   {data.billedTo?.companyName || "N/A"}
                 </Text>
-                <Text>{data.billedTo?.address || "N/A"}</Text>
+                <Text>{formatAddress(data.billedTo?.address)}</Text>
                 <Text style={{ marginTop: "18px" }}>
                   GSTIN: {data.billedTo?.gstin || "N/A"}
                 </Text>
@@ -362,7 +357,9 @@ const GeneratePDF = memo(({ data }) => {
             {data.items?.map((item, index) => (
               <View style={styles.tableRow} key={item.id || index}>
                 <Text style={styles.col1}>{index + 1}</Text>
-                <Text style={styles.col2}>{item.description || "N/A"}</Text>
+                <Text style={styles.col2}>
+                  {item.description || item.name || "N/A"}
+                </Text>
                 <Text style={styles.col3}>{item.quantity || "0"}</Text>
                 <Text style={styles.col4}>
                   {formatCurrency(item.unitPrice || 0)}
@@ -394,7 +391,9 @@ const GeneratePDF = memo(({ data }) => {
             </View>
             <View style={styles.totalRow}>
               <Text>Add/Less Adjustments:</Text>
-              <Text>{formatCurrency(0)}</Text>
+              <Text>
+                {formatCurrency(data.totals?.addLessAdjustments || 0)}
+              </Text>
             </View>
             <View style={[styles.totalRow, { backgroundColor: "#f5f5f5" }]}>
               <Text style={{ fontWeight: "bold" }}>Grand Total:</Text>
@@ -418,8 +417,8 @@ const GeneratePDF = memo(({ data }) => {
                 • Transfer token is mandatory for processing the order.
               </Text>
               <Text style={styles.termItem}>
-                • Purchase order should be in the name of Anocloud Technology
-                Solutions LLP.
+                • Purchase order should be in the name of{" "}
+                {data.billedBy?.companyName || "our company"}.
               </Text>
               <Text style={styles.termItem}>
                 • No of users and SKU should be same in Purchase order and
@@ -468,7 +467,7 @@ const GeneratePDF = memo(({ data }) => {
             </View>
           </View>
 
-          {/* Payment Details */}
+          {/* Additional Payment Options */}
           <View style={styles.paymentDetails}>
             <Text style={styles.sectionTitle}>Credit Card/Debit Card/UPI</Text>
             <Text style={styles.sectionContent}>
@@ -478,6 +477,7 @@ const GeneratePDF = memo(({ data }) => {
               </Text>
             </Text>
           </View>
+
           {/* INVOICE DETAILS Terms and Conditions */}
           <View style={{ marginTop: 15 }}>
             <Text style={styles.sectionTitle}>TERMS AND CONDITIONS:</Text>
@@ -557,10 +557,10 @@ const GeneratePDF = memo(({ data }) => {
               Authorized Signature
             </Text>
             <Text style={{ marginTop: 5, fontWeight: "bold" }}>
-              Vishal Kumar Gupta
+              {data.billedBy?.contact || "N/A"}
             </Text>
             <Text>Director</Text>
-            <Text>Anocloud Technology Solutions LLP</Text>
+            <Text>{data.billedBy?.companyName || "N/A"}</Text>
           </View>
 
           {/* Declaration */}

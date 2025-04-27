@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -10,14 +10,26 @@ import {
   Paper,
   InputAdornment,
   Collapse,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import { Save, Cancel, Remove, Add } from "@mui/icons-material";
 
-function InvoiceForm({ activeSection, data, onSave, onCancel }) {
+function InvoiceForm({
+  activeSection,
+  data,
+  onSave,
+  onCancel,
+  availableItems,
+}) {
   const [formData, setFormData] = useState(data[activeSection]);
   const [addingItem, setAddingItem] = useState(false);
+  const [selectedItem, setSelectedItem] = useState("");
   const [newItem, setNewItem] = useState({
     id: Date.now(),
+    _id: "",
     description: "",
     quantity: 1,
     unitPrice: 0,
@@ -31,6 +43,16 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddressChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      address: {
+        ...prev.address,
+        [field]: value,
+      },
+    }));
   };
 
   const handleItemChange = (index, e) => {
@@ -50,6 +72,23 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
     setFormData(updatedItems);
   };
 
+  const handleItemSelect = (e) => {
+    const itemId = e.target.value;
+    const selected = availableItems.find((item) => item._id === itemId);
+    if (selected) {
+      setSelectedItem(itemId);
+      setNewItem({
+        id: Date.now(),
+        _id: selected._id,
+        name: selected.name,
+        description: selected.description,
+        quantity: 1,
+        unitPrice: selected.unitPrice,
+        amount: selected.unitPrice,
+      });
+    }
+  };
+
   const handleNewItemChange = (e) => {
     const { name, value } = e.target;
     const updatedItem = {
@@ -66,8 +105,10 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
   };
 
   const startAddingItem = () => {
+    setSelectedItem("");
     setNewItem({
       id: Date.now(),
+      _id: "",
       description: "",
       quantity: 1,
       unitPrice: 0,
@@ -100,23 +141,6 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
     setFormData(updatedItems);
   };
 
-  const handleDateChange = (name, value) => {
-    if (!value) {
-      setFormData((prev) => ({ ...prev, [name]: "" }));
-      return;
-    }
-
-    const date = new Date(value);
-    setFormData((prev) => ({
-      ...prev,
-      [name]: date.toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }),
-    }));
-  };
-
   const handleSaveClick = () => {
     const updatedData = {
       ...data,
@@ -132,6 +156,10 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
     return formData[name] || "";
   };
 
+  const getAddressValue = (field) => {
+    return formData.address?.[field] || "";
+  };
+
   return (
     <Paper elevation={3} sx={{ p: 3, minHeight: "100%" }}>
       <Typography variant="h5" gutterBottom sx={{ color: "primary.main" }}>
@@ -141,7 +169,7 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
 
       {activeSection === "billedTo" && (
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12 }}>
+          <Grid item xs={12}>
             <TextField
               fullWidth
               label="Company Name"
@@ -152,20 +180,67 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
               variant="outlined"
             />
           </Grid>
-          <Grid size={{ xs: 12 }}>
+
+          {/* Address Fields */}
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Address"
-              name="address"
-              value={getCurrentValue("address")}
-              onChange={handleChange}
+              label="Street Address"
+              name="street"
+              value={getAddressValue("street")}
+              onChange={(e) => handleAddressChange("street", e.target.value)}
               required
-              multiline
-              rows={4}
               variant="outlined"
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="City"
+              name="city"
+              value={getAddressValue("city")}
+              onChange={(e) => handleAddressChange("city", e.target.value)}
+              required
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="State"
+              name="state"
+              value={getAddressValue("state")}
+              onChange={(e) => handleAddressChange("state", e.target.value)}
+              required
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="Postal Code"
+              name="postalCode"
+              value={getAddressValue("postalCode")}
+              onChange={(e) =>
+                handleAddressChange("postalCode", e.target.value)
+              }
+              required
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="Country"
+              name="country"
+              value={getAddressValue("country")}
+              onChange={(e) => handleAddressChange("country", e.target.value)}
+              required
+              variant="outlined"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label="GSTIN"
@@ -176,7 +251,7 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
               variant="outlined"
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label="Contact Person"
@@ -187,7 +262,7 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
               variant="outlined"
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label="Phone"
@@ -198,7 +273,7 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
               variant="outlined"
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label="Domain"
@@ -213,7 +288,6 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
 
       {activeSection === "items" && Array.isArray(formData) && (
         <Box>
-          {/* Existing items */}
           {formData.map((item, index) => (
             <Paper
               key={item.id}
@@ -227,6 +301,9 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
               >
                 <Remove />
               </IconButton>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                {item.name || "Item"}
+              </Typography>
               <TextField
                 fullWidth
                 label="Description"
@@ -235,11 +312,11 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
                 onChange={(e) => handleItemChange(index, e)}
                 required
                 multiline
-                rows={3}
+                rows={2}
                 sx={{ mb: 2 }}
               />
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 3 }}>
+                <Grid item xs={12} sm={4}>
                   <TextField
                     fullWidth
                     label="Quantity"
@@ -251,7 +328,7 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
                     required
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid item xs={12} sm={4}>
                   <TextField
                     fullWidth
                     label="Unit Price (₹)"
@@ -268,7 +345,7 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
                     required
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 5 }}>
+                <Grid item xs={12} sm={4}>
                   <TextField
                     fullWidth
                     label="Amount (₹)"
@@ -286,65 +363,87 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
             </Paper>
           ))}
 
-          {/* Add New Item Form */}
           <Collapse in={addingItem}>
             <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
-              <TextField
-                fullWidth
-                label="Description"
-                name="description"
-                value={newItem.description}
-                onChange={handleNewItemChange}
-                required
-                multiline
-                rows={3}
-                sx={{ mb: 2 }}
-              />
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 3 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Select Item</InputLabel>
+                <Select
+                  value={selectedItem}
+                  onChange={handleItemSelect}
+                  label="Select Item"
+                >
+                  <MenuItem value="">
+                    <em>Select an item</em>
+                  </MenuItem>
+                  {availableItems.map((item) => (
+                    <MenuItem key={item._id} value={item._id}>
+                      {item.name} (₹{item.unitPrice})
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {selectedItem && (
+                <>
                   <TextField
                     fullWidth
-                    label="Quantity"
-                    name="quantity"
-                    type="number"
-                    value={newItem.quantity}
+                    label="Description"
+                    name="description"
+                    value={newItem.description}
                     onChange={handleNewItemChange}
-                    inputProps={{ min: 1 }}
                     required
+                    multiline
+                    rows={2}
+                    sx={{ mb: 2 }}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField
-                    fullWidth
-                    label="Unit Price (₹)"
-                    name="unitPrice"
-                    type="number"
-                    value={newItem.unitPrice}
-                    onChange={handleNewItemChange}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">₹</InputAdornment>
-                      ),
-                    }}
-                    inputProps={{ step: "0.01", min: "0" }}
-                    required
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 5 }}>
-                  <TextField
-                    fullWidth
-                    label="Amount (₹)"
-                    name="amount"
-                    value={newItem.amount.toFixed(2)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">₹</InputAdornment>
-                      ),
-                      readOnly: true,
-                    }}
-                  />
-                </Grid>
-              </Grid>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        fullWidth
+                        label="Quantity"
+                        name="quantity"
+                        type="number"
+                        value={newItem.quantity}
+                        onChange={handleNewItemChange}
+                        inputProps={{ min: 1 }}
+                        required
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        fullWidth
+                        label="Unit Price (₹)"
+                        name="unitPrice"
+                        type="number"
+                        value={newItem.unitPrice}
+                        onChange={handleNewItemChange}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">₹</InputAdornment>
+                          ),
+                        }}
+                        inputProps={{ step: "0.01", min: "0" }}
+                        required
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        fullWidth
+                        label="Amount (₹)"
+                        name="amount"
+                        value={newItem.amount.toFixed(2)}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">₹</InputAdornment>
+                          ),
+                          readOnly: true,
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </>
+              )}
+
               <Box
                 sx={{
                   display: "flex",
@@ -372,7 +471,6 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
             </Paper>
           </Collapse>
 
-          {/* Add Item Button */}
           {!addingItem && (
             <Button
               variant="outlined"
@@ -388,57 +486,63 @@ function InvoiceForm({ activeSection, data, onSave, onCancel }) {
 
       {activeSection === "invoiceDetails" && (
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12 }}>
-            <TextField
-              fullWidth
-              label="Invoice Number"
-              name="number"
-              value={getCurrentValue("number")}
-              onChange={handleChange}
-              required
-              variant="outlined"
-            />
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <InputLabel>Invoice Type</InputLabel>
+              <Select
+                label="Invoice Type"
+                name="type"
+                value={getCurrentValue("type") || "GW"}
+                onChange={handleChange}
+                required
+              >
+                <MenuItem value="SW">SW</MenuItem>
+                <MenuItem value="GC">GC</MenuItem>
+                <MenuItem value="GW">GW</MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
+              </Select>
+            </FormControl>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label="Invoice Date"
               name="date"
               type="date"
-              value={
-                getCurrentValue("date")
-                  ? new Date(getCurrentValue("date"))
-                      .toISOString()
-                      .substr(0, 10)
-                  : ""
+              value={getCurrentValue("date") || ""}
+              onChange={(e) =>
+                handleChange({
+                  target: {
+                    name: "date",
+                    value: e.target.value,
+                  },
+                })
               }
-              onChange={(e) => handleDateChange("date", e.target.value)}
               required
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label="Due Date"
               name="dueDate"
               type="date"
-              value={
-                getCurrentValue("dueDate")
-                  ? new Date(getCurrentValue("dueDate"))
-                      .toISOString()
-                      .substr(0, 10)
-                  : ""
+              value={getCurrentValue("dueDate") || ""}
+              onChange={(e) =>
+                handleChange({
+                  target: {
+                    name: "dueDate",
+                    value: e.target.value,
+                  },
+                })
               }
-              onChange={(e) => handleDateChange("dueDate", e.target.value)}
               required
               InputLabelProps={{ shrink: true }}
               inputProps={{
-                min: getCurrentValue("date")
-                  ? new Date(getCurrentValue("date"))
-                      .toISOString()
-                      .substr(0, 10)
-                  : new Date().toISOString().substr(0, 10),
+                min:
+                  getCurrentValue("date") ||
+                  new Date().toISOString().split("T")[0],
               }}
             />
           </Grid>

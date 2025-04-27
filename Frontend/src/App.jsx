@@ -3,7 +3,7 @@ import LandingPage from "./pages/LandingPage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AuthPage from "./pages/AuthPage";
 import ProfileCompletePage from "./pages/ProfileCompletePage";
-import InvoiceMain from "./screens/Invoicemain";
+import InvoiceMain from "./screens/InvoiceMain";
 import Profile from "./screens/Profile";
 import InvoiceBoard from "./screens/InvoiceBoard";
 import InvoiceList from "./screens/InvoiceList";
