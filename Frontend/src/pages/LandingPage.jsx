@@ -271,7 +271,7 @@
 
 // export default LandingPage;
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Box,
   Typography,
@@ -286,7 +286,16 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Tabs,
+  Tab,
   Container,
+  List,
+  ListItem,
+  ListItemText,
+  FormControl,
+  FormLabel,
+  FormGroup,
+  FormHelperText,
 } from "@mui/material";
 import {
   Receipt,
@@ -304,26 +313,25 @@ import { keyframes } from "@emotion/react";
 
 // Keyframes for animations
 const floatAnimation = keyframes`
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0); }
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
 `;
 
 const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 `;
 
 const LandingPage = () => {
   const theme = useTheme();
-
-  // Professional media queries
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // < 600px
-  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "lg")); // 600px - 1200px
-  const isDesktop = useMediaQuery(theme.breakpoints.up("lg")); // > 1200px
-
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "lg"));
+  const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [featureTabValue, setFeatureTabValue] = useState(0);
+  const featuresRef = useRef(null); // Ref for the features section on mobile
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -339,6 +347,14 @@ const LandingPage = () => {
     setTimeout(() => {
       navigate(path);
     }, 200);
+  };
+
+  const handleFeatureTabChange = (event, newValue) => {
+    setFeatureTabValue(newValue);
+  };
+
+  const scrollToFeatures = () => {
+    featuresRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   // Testimonials data
@@ -391,7 +407,7 @@ const LandingPage = () => {
   ];
 
   // Features data
-  const features = [
+  const featuresData = [
     {
       icon: (
         <Receipt sx={{ fontSize: 40, color: "#00e68a", marginBottom: 2 }} />
@@ -453,7 +469,6 @@ const LandingPage = () => {
         );
       }
     }
-
     return stars;
   };
 
@@ -463,8 +478,8 @@ const LandingPage = () => {
         display: "flex",
         flexDirection: isMobile ? "column" : "row",
         minHeight: "100vh",
-        backgroundColor: "#f5f5f5",
-        overflow: "hidden",
+        backgroundColor: (theme) => theme.palette.grey[100], // Subtle background
+        overflowX: "hidden",
         position: "relative",
       }}
     >
@@ -485,7 +500,7 @@ const LandingPage = () => {
         />
       )}
 
-      {/* Left Content Section - 70% width */}
+      {/* Left Content Section */}
       <Box
         sx={{
           width: isMobile ? "100%" : "70%",
@@ -494,6 +509,7 @@ const LandingPage = () => {
           height: "100vh",
           maxWidth: "900px",
           scrollbarWidth: "none",
+          boxSizing: "border-box",
         }}
       >
         {/* Logo */}
@@ -516,6 +532,7 @@ const LandingPage = () => {
           sx={{
             marginBottom: 8,
             animation: `${fadeIn} 1s ease-out`,
+            textAlign: isMobile ? "center" : "left",
           }}
         >
           <Typography
@@ -523,7 +540,7 @@ const LandingPage = () => {
             sx={{
               fontWeight: "bold",
               marginBottom: 2,
-              color: "#333",
+              color: theme.palette.grey[800],
             }}
           >
             Streamline Your Invoicing Process
@@ -532,7 +549,7 @@ const LandingPage = () => {
             variant={isMobile ? "h6" : "h5"}
             sx={{
               marginBottom: 3,
-              color: "#555",
+              color: theme.palette.grey[600],
             }}
           >
             Professional invoices in minutes, not hours
@@ -541,7 +558,7 @@ const LandingPage = () => {
             variant="body1"
             sx={{
               marginBottom: 4,
-              color: "#666",
+              color: theme.palette.grey[700],
               lineHeight: 1.6,
             }}
           >
@@ -549,6 +566,24 @@ const LandingPage = () => {
             send, and track professional invoices effortlessly. Save time, get
             paid faster, and look professional with our powerful tools.
           </Typography>
+          {isMobile && (
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={scrollToFeatures}
+              fullWidth
+              sx={{
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                },
+                transition: "all 0.3s ease",
+                color: "#00ff99",
+                borderColor: "#00e68a",
+              }}
+            >
+              Explore Features
+            </Button>
+          )}
         </Box>
 
         {/* Powerful Features Section */}
@@ -558,66 +593,108 @@ const LandingPage = () => {
             animation: `${fadeIn} 1s ease-out 0.2s`,
             animationFillMode: "both",
           }}
+          ref={featuresRef}
         >
           <Typography
             variant={isMobile ? "h5" : "h4"}
             sx={{
               fontWeight: "bold",
               marginBottom: 4,
-              color: "#333",
+              color: theme.palette.grey[800],
+              textAlign: isMobile ? "center" : "left",
             }}
           >
             Powerful Features
           </Typography>
 
-          <Grid container spacing={4}>
-            {features.map((feature, index) => (
-              <Grid
-                xs={12}
-                sm={6}
-                key={index}
-                sx={{
-                  display: "flex",
-                  justifyContent: index % 2 === 0 ? "flex-start" : "flex-end",
-                }}
+          {isDesktop || isTablet ? (
+            <Box
+              sx={{ borderBottom: 1, borderColor: "divider", marginBottom: 2 }}
+            >
+              <Tabs
+                value={featureTabValue}
+                onChange={handleFeatureTabChange}
+                aria-label="feature tabs"
               >
-                <Card
+                {featuresData.map((feature, index) => (
+                  <Tab key={index} label={feature.title} />
+                ))}
+              </Tabs>
+            </Box>
+          ) : (
+            <Grid container spacing={4}>
+              {featuresData.map((feature, index) => (
+                <Grid
+                  xs={12}
+                  sm={6}
+                  key={index}
                   sx={{
-                    width: "100%",
-                    maxWidth: isDesktop ? "400px" : "100%",
-                    borderLeft: "4px solid #00e68a",
-                    transition: "transform 0.3s",
-                    "&:hover": {
-                      transform: "translateY(-5px)",
-                      boxShadow: "0 8px 24px rgba(0, 230, 138, 0.2)",
-                    },
+                    display: "flex",
+                    justifyContent: index % 2 === 0 ? "flex-start" : "flex-end",
                   }}
                 >
-                  <CardContent>
+                  <Card
+                    sx={{
+                      width: "100%",
+                      maxWidth: isDesktop ? "400px" : "100%",
+                      borderLeft: `4px solid ${theme.palette.primary.main}`,
+                      transition: "transform 0.3s",
+                      "&:hover": {
+                        transform: "translateY(-5px)",
+                        boxShadow: theme.shadows[4],
+                      },
+                    }}
+                  >
+                    <CardContent>
+                      {feature.icon}
+                      <Typography
+                        variant="h6"
+                        gutterBottom
+                        sx={{ fontSize: isMobile ? "1.1rem" : "1.25rem" }}
+                      >
+                        {feature.title}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontSize: isMobile ? "0.875rem" : "1rem" }}
+                      >
+                        {feature.description}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+
+          {/* Tab Panel for Desktop/Tablet */}
+          {(isDesktop || isTablet) && (
+            <Box sx={{ mt: 4 }}>
+              {featuresData.map((feature, index) => (
+                <TabPanel value={featureTabValue} index={index} key={index}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: isMobile ? "column" : "row",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                  >
                     {feature.icon}
-                    <Typography
-                      variant="h6"
-                      gutterBottom
-                      sx={{
-                        fontSize: isMobile ? "1.1rem" : "1.25rem",
-                      }}
-                    >
-                      {feature.title}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        fontSize: isMobile ? "0.875rem" : "1rem",
-                      }}
-                    >
-                      {feature.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+                    <Box>
+                      <Typography variant="h6" fontWeight="bold" gutterBottom>
+                        {feature.title}
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary">
+                        {feature.description}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </TabPanel>
+              ))}
+            </Box>
+          )}
         </Box>
 
         {/* Testimonials Section */}
@@ -633,7 +710,8 @@ const LandingPage = () => {
             sx={{
               fontWeight: "bold",
               marginBottom: 4,
-              color: "#333",
+              color: theme.palette.grey[800],
+              textAlign: isMobile ? "center" : "left",
             }}
           >
             What Our Customers Say
@@ -656,13 +734,13 @@ const LandingPage = () => {
                     height: "100%",
                     padding: 3,
                     borderRadius: 2,
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+                    boxShadow: theme.shadows[2],
                     display: "flex",
                     flexDirection: "column",
                     transition: "all 0.3s ease",
                     "&:hover": {
                       transform: "translateY(-5px)",
-                      boxShadow: "0 8px 24px rgba(0, 230, 138, 0.2)",
+                      boxShadow: theme.shadows[4],
                     },
                   }}
                 >
@@ -675,7 +753,7 @@ const LandingPage = () => {
                   >
                     <Avatar
                       sx={{
-                        bgcolor: "#00e68a",
+                        bgcolor: "#00ff99",
                         marginRight: 2,
                         width: 48,
                         height: 48,
@@ -698,6 +776,7 @@ const LandingPage = () => {
                       marginBottom: 2,
                       flexGrow: 1,
                       fontStyle: "italic",
+                      color: theme.palette.grey[700],
                     }}
                   >
                     "{testimonial.content}"
@@ -722,7 +801,8 @@ const LandingPage = () => {
             sx={{
               fontWeight: "bold",
               marginBottom: 4,
-              color: "#333",
+              color: theme.palette.grey[800],
+              textAlign: isMobile ? "center" : "left",
             }}
           >
             Frequently Asked Questions
@@ -734,7 +814,7 @@ const LandingPage = () => {
               sx={{
                 marginBottom: 2,
                 borderRadius: "8px !important",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                boxShadow: theme.shadows[1],
                 "&:before": {
                   display: "none",
                 },
@@ -751,10 +831,14 @@ const LandingPage = () => {
                   },
                 }}
               >
-                <Typography fontWeight="bold">{faq.question}</Typography>
+                <Typography fontWeight="bold" color={theme.palette.grey[700]}>
+                  {faq.question}
+                </Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Typography>{faq.answer}</Typography>
+                <Typography color={theme.palette.grey[600]}>
+                  {faq.answer}
+                </Typography>
               </AccordionDetails>
             </Accordion>
           ))}
@@ -764,9 +848,9 @@ const LandingPage = () => {
         <Box
           sx={{
             padding: 4,
-            backgroundColor: "#fff",
+            backgroundColor: theme.palette.grey[200],
             borderRadius: 2,
-            boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+            boxShadow: theme.shadows[1],
             textAlign: "center",
           }}
         >
@@ -776,23 +860,26 @@ const LandingPage = () => {
         </Box>
       </Box>
 
-      {/* Right Sticky Section - 30% width */}
+      {/* Right Sticky Section */}
       <Box
         sx={{
           width: isMobile ? "100%" : "30%",
           padding: isMobile ? 3 : isTablet ? 4 : 6,
-          backgroundColor: "#fff",
-          boxShadow: isMobile
-            ? "0 -2px 10px rgba(0,0,0,0.05)"
-            : "-2px 0 10px rgba(0,0,0,0.05)",
+          backgroundColor: theme.palette.background.paper,
+          boxShadow: isMobile ? theme.shadows[2] : theme.shadows[4],
           position: isMobile ? "relative" : "fixed",
           right: 0,
           top: 0,
-          height: "100vh",
+          height: isMobile ? "auto" : "100vh",
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
+          alignItems: "stretch",
+          boxSizing: "border-box",
+          ...(isMobile && {
+            marginTop: 4,
+          }),
         }}
       >
         <Typography
@@ -801,6 +888,7 @@ const LandingPage = () => {
             fontWeight: "bold",
             marginBottom: 2,
             textAlign: "center",
+            color: theme.palette.grey[800],
           }}
         >
           Professional Invoice Generation System
@@ -809,7 +897,7 @@ const LandingPage = () => {
           variant="body1"
           sx={{
             marginBottom: 4,
-            color: "text.secondary",
+            color: theme.palette.grey[600],
             textAlign: "center",
             fontSize: isMobile ? "0.875rem" : "1rem",
           }}
@@ -817,23 +905,25 @@ const LandingPage = () => {
           Create, manage, and track invoices effortlessly. Our system offers:
         </Typography>
 
-        {/* Features List */}
+        {/* Features List for Right Section */}
         <Box
           sx={{
             textAlign: "left",
             marginBottom: 4,
             "& ul": {
               paddingLeft: 0,
+              listStyleType: "none",
             },
             "& li": {
               marginBottom: 2,
               display: "flex",
               alignItems: "center",
               fontSize: isMobile ? "0.875rem" : "1rem",
+              color: theme.palette.grey[700],
             },
           }}
         >
-          <ul style={{ listStyleType: "none" }}>
+          <ul>
             {[
               "Automated invoice generation",
               "Customizable templates",
@@ -847,7 +937,7 @@ const LandingPage = () => {
                   sx={{
                     width: 8,
                     height: 8,
-                    backgroundColor: "#00e68a",
+                    backgroundColor: theme.palette.primary.main,
                     borderRadius: "50%",
                     marginRight: 2,
                   }}
@@ -871,14 +961,12 @@ const LandingPage = () => {
             size={isMobile ? "medium" : "large"}
             fullWidth
             sx={{
-              backgroundColor: "#00e68a",
-              color: "white",
               "&:hover": {
-                backgroundColor: "#00ff99",
                 transform: "translateY(-2px)",
-                boxShadow: "0 4px 8px rgba(0, 230, 138, 0.3)",
+                backgroundColor: "#00ff99",
               },
               transition: "all 0.3s ease",
+              backgroundColor: "#00e68a",
             }}
             onClick={() => handleButtonClick("/auth/register")}
           >
@@ -889,15 +977,12 @@ const LandingPage = () => {
             size={isMobile ? "medium" : "large"}
             fullWidth
             sx={{
-              borderColor: "#00e68a",
-              color: "#00e68a",
               "&:hover": {
-                borderColor: "#00ff99",
-                color: "#00ff99",
                 transform: "translateY(-2px)",
-                boxShadow: "0 4px 8px rgba(0, 230, 138, 0.2)",
               },
               transition: "all 0.3s ease",
+              color: "#00ff99",
+              borderColor: "#00e68a",
             }}
             onClick={() => handleButtonClick("/auth/login")}
           >
@@ -908,5 +993,22 @@ const LandingPage = () => {
     </Box>
   );
 };
+
+// TabPanel component for the features section
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`feature-tabpanel-${index}`}
+      aria-labelledby={`feature-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
 
 export default LandingPage;
