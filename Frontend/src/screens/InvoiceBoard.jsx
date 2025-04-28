@@ -328,7 +328,7 @@ function InvoiceBoard() {
           {drawer}
         </Drawer>
 
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Box component="main" sx={{ flexGrow: 1, p: 1 }}>
           <Outlet />
         </Box>
 
@@ -355,7 +355,7 @@ function InvoiceBoard() {
           </DialogTitle>
           <DialogContent sx={{ py: 3, mt: 2 }}>
             <Typography variant="body1">
-              Are you sure you want to logout?
+              Are you sure you want to <strong>logout</strong>?
             </Typography>
           </DialogContent>
           <DialogActions sx={{ px: 3, py: 2 }}>

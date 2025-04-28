@@ -252,7 +252,7 @@ const Profile = () => {
             </Box>
             <Divider sx={{ mb: 3 }} />
 
-            <Grid container spacing={isMobile ? 1 : 3}>
+            <Grid container spacing={isMobile ? 3 : 3}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -375,7 +375,7 @@ const Profile = () => {
             </Box>
             <Divider sx={{ mb: 3 }} />
 
-            <Grid container spacing={isMobile ? 1 : 3}>
+            <Grid container spacing={isMobile ? 3 : 3}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
@@ -457,7 +457,7 @@ const Profile = () => {
             </Box>
             <Divider sx={{ mb: 3 }} />
 
-            <Grid container spacing={isMobile ? 1 : 3}>
+            <Grid container spacing={isMobile ? 3 : 3}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth

@@ -14,6 +14,10 @@ import {
   Toolbar,
   IconButton,
   Divider,
+  DialogActions,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
 import { Logout, Business, AccountBalance, Info } from "@mui/icons-material";
 import axios from "../axiosInstence";
@@ -44,6 +48,7 @@ const ProfileCompletePage = () => {
     website: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
@@ -128,10 +133,22 @@ const ProfileCompletePage = () => {
     );
   }
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setLogoutOpen(true);
+  };
+
+  const handleLogoutConfirm = () => {
+    setIsLoading(true);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    navigate("/auth/login");
+    setTimeout(() => {
+      navigate("/auth/login");
+      setIsLoading(false);
+    }, 300);
+  };
+
+  const handleLogoutCancel = () => {
+    setLogoutOpen(false);
   };
 
   return (
@@ -141,7 +158,15 @@ const ProfileCompletePage = () => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Invoice System
           </Typography>
-          <IconButton color="inherit" onClick={handleLogout}>
+          <IconButton
+            color="inherit"
+            onClick={handleLogoutClick}
+            sx={{
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.1)",
+              },
+            }}
+          >
             <Logout />
           </IconButton>
         </Toolbar>
@@ -420,6 +445,63 @@ const ProfileCompletePage = () => {
               </Button>
             </Box>
           </form>
+
+          {/* Logout Confirmation Dialog */}
+          <Dialog
+            open={logoutOpen}
+            onClose={handleLogoutCancel}
+            maxWidth="xs"
+            fullWidth
+            PaperProps={{
+              sx: {
+                borderRadius: 1,
+              },
+            }}
+          >
+            <DialogTitle
+              sx={{
+                backgroundColor: "#ff4d4d",
+                color: "#fff",
+                fontWeight: 600,
+              }}
+            >
+              Confirm Logout
+            </DialogTitle>
+            <DialogContent sx={{ py: 3, mt: 2 }}>
+              <Typography variant="body1">
+                Are you sure you want to <strong>logout</strong>?
+              </Typography>
+            </DialogContent>
+            <DialogActions sx={{ px: 3, py: 2 }}>
+              <Button
+                onClick={handleLogoutCancel}
+                sx={{
+                  color: "#ff4d4d",
+                  borderRadius: 1,
+                  px: 2,
+                  py: 1,
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleLogoutConfirm}
+                variant="contained"
+                sx={{
+                  borderRadius: 1,
+                  backgroundColor: "#ff4d4d",
+                  px: 2,
+                  py: 1,
+                  boxShadow: "none",
+                  "&:hover": {
+                    boxShadow: "none",
+                  },
+                }}
+              >
+                Logout
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Paper>
       </Container>
     </>
