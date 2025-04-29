@@ -30,10 +30,11 @@ import { Search as SearchIcon, Print as PrintIcon } from "@mui/icons-material";
 import { fetchInvoiceData, updateInvoiceStatus } from "../invoiceApi";
 
 const statusOptions = [
-  { value: "draft", label: "Draft", color: "#d1d1e0" }, // Gray
-  { value: "sent", label: "Sent", color: "#6666ff" }, // Blue
-  { value: "paid", label: "Paid", color: "#66ff66" }, // Green
-  { value: "overdue", label: "Overdue", color: "#ff6666" }, // Red
+  { value: "draft", label: "Draft", color: "#d1d1e0" },
+  { value: "sent", label: "Sent", color: "#6666ff" },
+  { value: "paid", label: "Paid", color: "#66ff66" },
+  { value: "overdue", label: "Overdue", color: "#ff66ff" },
+  { value: "cancelled", label: "Cancelled", color: "#ff6666" },
 ];
 
 // ✅ Get background color directly from custom hex
