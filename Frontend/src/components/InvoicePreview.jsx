@@ -760,10 +760,7 @@ function InvoicePreview({
             <div style={{ display: "none" }}>
               <PDFDownloadLink
                 document={pdfDocument}
-                fileName={`invoice_${data.invoiceDetails?.fullInvoiceNumber?.replace(
-                  /\//g,
-                  "-"
-                )}.pdf`}
+                fileName={`Invoice_ANO-${data.invoiceDetails?.type}-${data.invoiceDetails?.currentFY}-${data.invoiceDetails?.number}.pdf`}
                 ref={pdfDownloadLinkRef}
                 onClick={handleDownloadComplete}
               >

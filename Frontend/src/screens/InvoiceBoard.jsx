@@ -100,7 +100,7 @@ const navItems = [
 ];
 
 function InvoiceBoard() {
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Changed to 'sm' for mobile only
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); 
   const [loading, setLoading] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
