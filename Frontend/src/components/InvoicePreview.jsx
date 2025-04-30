@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Box,
   Typography,
@@ -16,7 +16,7 @@ import {
   Alert,
   useMediaQuery,
 } from "@mui/material";
-import { Edit, PictureAsPdf } from "@mui/icons-material";
+import { Edit, PictureAsPdf, Save } from "@mui/icons-material";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import GeneratePDF from "./GeneratePDF";
 
@@ -24,11 +24,15 @@ function InvoicePreview({
   data = {},
   onSectionClick = () => {},
   isMobile = false,
-  onGeneratePDF,
-  isGenerating,
+  onSaveInvoice,
+  onPdfDownloaded,
+  isSaving = false,
+  pdfReady = false,
 }) {
-  const [pdfError, setPdfError] = useState(null);
+  const [error, setError] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   const matchesSM = useMediaQuery((theme) => theme.breakpoints.down("sm"));
+  const pdfDownloadLinkRef = useRef(null);
 
   const formatAddress = (address) => {
     if (!address) return "N/A";
@@ -40,9 +44,9 @@ function InvoicePreview({
     return (
       data.billedTo?.companyName &&
       data.billedTo?.address &&
-      data.billedTo?.gstin &&
-      data.billedTo?.contact &&
-      data.billedTo?.phone &&
+      data.billedTo?.gstNumber &&
+      data.billedTo?.contactPerson &&
+      data.billedTo?.phoneNumber &&
       data.items?.length > 0 &&
       data.invoiceDetails?.type &&
       data.invoiceDetails?.date &&
@@ -50,18 +54,31 @@ function InvoicePreview({
     );
   };
 
-  const handlePdfGeneration = async () => {
+  const handleSaveClick = async () => {
     if (!isFormValid()) {
-      setPdfError("Please fill all required fields before generating PDF");
+      setError("Please fill all required fields before saving");
       return;
     }
 
     try {
-      setPdfError(null);
-      await onGeneratePDF();
-    } catch (error) {
-      setPdfError("Failed to generate PDF. Please try again.");
+      setError(null);
+      await onSaveInvoice();
+    } catch (err) {
+      setError("Failed to save invoice");
     }
+  };
+
+  const handleDownloadClick = () => {
+    setIsDownloading(true);
+    // Trigger the download
+    if (pdfDownloadLinkRef.current) {
+      pdfDownloadLinkRef.current.click();
+    }
+  };
+
+  const handleDownloadComplete = () => {
+    setIsDownloading(false);
+    onPdfDownloaded();
   };
 
   const pdfDocument = <GeneratePDF data={data} />;
@@ -197,25 +214,25 @@ function InvoicePreview({
             variant="body2"
             sx={{ mt: 1, fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
           >
-            GSTIN: {data.billedTo?.gstin || "N/A"}
+            GSTIN: {data.billedTo?.gstNumber || "N/A"}
           </Typography>
           <Typography
             variant="body2"
             sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
           >
-            Contact: {data.billedTo?.contact || "N/A"}
+            Contact: {data.billedTo?.contactPerson || "N/A"}
           </Typography>
           <Typography
             variant="body2"
             sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
           >
-            Phone: {data.billedTo?.phone || "N/A"}
+            Phone: {data.billedTo?.phoneNumber || "N/A"}
           </Typography>
           <Typography
             variant="body2"
             sx={{ mt: 1, fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
           >
-            Domain: {data.billedTo?.domain || "N/A"}
+            Domain: {data.billedTo?.domainName || "N/A"}
           </Typography>
           {isMobile && (
             <Button
@@ -260,25 +277,25 @@ function InvoicePreview({
             variant="body2"
             sx={{ mt: 1, fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
           >
-            GSTIN: {data.billedBy?.gstin || "N/A"}
+            GSTIN: {data.billedBy?.gstNumber || "N/A"}
           </Typography>
           <Typography
             variant="body2"
             sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
           >
-            PAN: {data.billedBy?.pan || "N/A"}
+            PAN: {data.billedBy?.panNumber || "N/A"}
           </Typography>
           <Typography
             variant="body2"
             sx={{ mt: 1, fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
           >
-            Contact: {data.billedBy?.contact || "N/A"}
+            Contact: {data.billedBy?.directorName || "N/A"}
           </Typography>
           <Typography
             variant="body2"
             sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
           >
-            Phone: {data.billedBy?.phone || "N/A"}
+            Phone: {data.billedBy?.phoneNumber || "N/A"}
           </Typography>
         </Paper>
       </Box>
@@ -337,6 +354,12 @@ function InvoicePreview({
                   align="right"
                   sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
                 >
+                  Discount (%)
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
+                >
                   Amount (₹)
                 </TableCell>
               </TableRow>
@@ -365,6 +388,12 @@ function InvoicePreview({
                     sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
                   >
                     {(item.unitPrice || 0).toFixed(2)}
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
+                  >
+                    {(item.discountPercentage || 0).toFixed(2)}%
                   </TableCell>
                   <TableCell
                     align="right"
@@ -402,16 +431,29 @@ function InvoicePreview({
       </Paper>
 
       {/* Totals */}
-      <Paper elevation={1} sx={{ p: 2, mb: 3 }}>
-        <Typography
-          variant="h6"
-          sx={{
-            color: "primary.main",
-            fontSize: matchesSM ? "1rem" : "1.25rem",
-          }}
-        >
-          Totals
-        </Typography>
+      <Paper elevation={1} sx={{ p: 2, mb: 3, position: "relative" }}>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "primary.main",
+              fontSize: matchesSM ? "1rem" : "1.25rem",
+              marginRight: 1,
+            }}
+          >
+            Totals
+          </Typography>
+          {!isMobile && (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => onSectionClick("totals")}
+              startIcon={<Edit />}
+            >
+              Edit
+            </Button>
+          )}
+        </Box>
         <TableContainer>
           <Table size="small" sx={{ mt: 2 }}>
             <TableBody>
@@ -419,7 +461,7 @@ function InvoicePreview({
                 <TableCell
                   sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
                 >
-                  Total
+                  Subtotal
                 </TableCell>
                 <TableCell
                   align="right"
@@ -432,52 +474,66 @@ function InvoicePreview({
                 <TableCell
                   sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
                 >
-                  (-) Discount
+                  (-) Item Discounts
                 </TableCell>
                 <TableCell
                   align="right"
                   sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
                 >
-                  ₹{(data.totals?.discount || 0).toFixed(2)}
+                  ₹{(data.totals?.itemDiscounts || 0).toFixed(2)}
                 </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell
                   sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
                 >
-                  (+) GST (@18%)
+                  Amount After Item Discounts
                 </TableCell>
                 <TableCell
                   align="right"
                   sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
                 >
-                  ₹{(data.totals?.gst || 0).toFixed(2)}
-                </TableCell>
-              </TableRow>
-              <TableRow sx={{ backgroundColor: "action.hover" }}>
-                <TableCell
-                  sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
-                >
-                  Net total
-                </TableCell>
-                <TableCell
-                  align="right"
-                  sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
-                >
-                  ₹{(data.totals?.grandTotal || 0).toFixed(2)}
+                  ₹{(data.totals?.amountAfterItemDiscounts || 0).toFixed(2)}
                 </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell
                   sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
                 >
-                  Add/Less Adjustments
+                  (-) Additional Discount (
+                  {data.totals?.discountPercentage || 0}%)
                 </TableCell>
                 <TableCell
                   align="right"
                   sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
                 >
-                  ₹{(data.totals?.addLessAdjustments || 0).toFixed(2)}
+                  ₹{(data.totals?.discountAmount || 0).toFixed(2)}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell
+                  sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
+                >
+                  Amount After All Discounts
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
+                >
+                  ₹{(data.totals?.amountAfterAllDiscounts || 0).toFixed(2)}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell
+                  sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
+                >
+                  (+) GST (@{data.totals?.gstRate || 18}%)
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}
+                >
+                  ₹{(data.totals?.gstAmount || 0).toFixed(2)}
                 </TableCell>
               </TableRow>
               <TableRow sx={{ backgroundColor: "action.hover" }}>
@@ -496,12 +552,23 @@ function InvoicePreview({
                     fontSize: matchesSM ? "0.75rem" : "0.875rem",
                   }}
                 >
-                  ₹{(data.totals?.grandTotal || 0).toFixed(2)}
+                  ₹{(data.totals?.totalAmount || 0).toFixed(2)}
                 </TableCell>
               </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
+        {isMobile && (
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{ mt: 2 }}
+            onClick={() => onSectionClick("totals")}
+            startIcon={<Edit />}
+          >
+            Edit Totals
+          </Button>
+        )}
       </Paper>
 
       {/* Terms and Conditions */}
@@ -657,7 +724,7 @@ function InvoicePreview({
             fontSize: matchesSM ? "0.875rem" : "1rem",
           }}
         >
-          {data.billedBy?.contact || "N/A"}
+          {data.billedBy?.directorName || "N/A"}
         </Typography>
         <Typography sx={{ fontSize: matchesSM ? "0.75rem" : "0.875rem" }}>
           Director
@@ -669,37 +736,53 @@ function InvoicePreview({
 
       {/* Actions */}
       <Box sx={{ mt: 4 }}>
-        {pdfError && (
+        {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            {pdfError}
+            {error}
           </Alert>
         )}
-        <PDFDownloadLink
-          document={pdfDocument}
-          fileName={`invoice_ANO-${data.invoiceDetails?.type}-${data.invoiceDetails?.currentFY}-${data.invoiceDetails?.number}.pdf`}
-          onClick={(e) => {
-            if (!isFormValid()) {
-              e.preventDefault();
-              setPdfError(
-                "Please fill all required fields before generating PDF"
-              );
-            }
-          }}
-        >
-          {({ loading, error }) => (
+
+        {!pdfReady ? (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Save />}
+            onClick={handleSaveClick}
+            disabled={!isFormValid() || isSaving}
+            fullWidth
+            sx={{ mb: 2 }}
+          >
+            {isSaving ? "Saving..." : "Save Invoice"}
+          </Button>
+        ) : (
+          <>
+            {/* Hidden download link that we'll trigger programmatically */}
+            <div style={{ display: "none" }}>
+              <PDFDownloadLink
+                document={pdfDocument}
+                fileName={`invoice_${data.invoiceDetails?.fullInvoiceNumber?.replace(
+                  /\//g,
+                  "-"
+                )}.pdf`}
+                ref={pdfDownloadLinkRef}
+                onClick={handleDownloadComplete}
+              >
+                {({ loading }) => (loading ? "Loading..." : "Download")}
+              </PDFDownloadLink>
+            </div>
+
             <Button
               variant="contained"
-              color="primary"
+              color="secondary"
               startIcon={<PictureAsPdf />}
-              disabled={!isFormValid() || loading || isGenerating}
-              onClick={handlePdfGeneration}
+              onClick={handleDownloadClick}
+              disabled={isDownloading}
               fullWidth
-              size={matchesSM ? "small" : "medium"}
             >
-              {loading || isGenerating ? "Generating PDF..." : "Download PDF"}
+              {isDownloading ? "Downloading..." : "Download PDF"}
             </Button>
-          )}
-        </PDFDownloadLink>
+          </>
+        )}
       </Box>
     </Paper>
   );

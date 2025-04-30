@@ -16,11 +16,6 @@ const itemSchema = new mongoose.Schema({
         required: [true, 'Unit price is required'],
         min: [0, 'Unit price cannot be negative']
     },
-    discount: {
-        type: Number,
-        default: 0,
-        min: 0
-    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Company",

@@ -39,19 +39,38 @@ const InvoiceSchema = new mongoose.Schema({
             required: true,
             min: 1
         },
-
+        itemDiscount: {
+            type: Number,
+            default: 0,
+            min: 0,
+            max: 100
+        },
         priceAtTime: {
             type: Number,
-            // required: true
+            required: true
         }
     }],
-    discount: {
+    overAllDiscount: {
         type: Number,
         default: 0,
-        min: 0
+        min: 0,
+        max: 100
     },
     subtotal: {
         type: Number,
+        required: true
+    },
+    totalDiscount: {
+        type: Number,
+        required: true
+    },
+    amountAfterItemDiscounts: {
+        type: Number,
+        required: true
+    },
+    amountAfterAllDiscounts: {
+        type: Number,
+        required: true
     },
     gstRate: {
         type: Number,
@@ -59,9 +78,11 @@ const InvoiceSchema = new mongoose.Schema({
     },
     gstAmount: {
         type: Number,
+        required: true
     },
     totalAmount: {
         type: Number,
+        required: true
     },
     createdAt: {
         type: Date,

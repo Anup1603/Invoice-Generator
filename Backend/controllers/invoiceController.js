@@ -5,10 +5,10 @@ const calculateInvoice = require('../utils/calculateInvoice');
 
 const createInvoice = async (req, res, next) => {
     try {
-        const { invoiceType, customer, items, discount = 0, gstRate = 18, dueDate } = req.body;
+        const { invoiceType, customer, items, overAllDiscount = 0, gstRate = 18, dueDate } = req.body;
         const companyId = req.user.company;
 
-        const itemIds = items.map(i => i.itemId);
+        const itemIds = items.map(i => i.item);
         const validItems = await Item.find({ _id: { $in: itemIds }, company: companyId });
 
         if (validItems.length !== items.length) {
@@ -20,25 +20,31 @@ const createInvoice = async (req, res, next) => {
         }
 
         const invoiceItems = items.map(i => {
-            const matchedItem = validItems.find(item => item._id.toString() === i.itemId);
+            const matchedItem = validItems.find(item => item._id.toString() === i.item);
             const quantity = Number(i.quantity || 1);
             const unitPrice = matchedItem.unitPrice;
-            const priceAtTime = unitPrice * quantity;
+            const priceAtTime = unitPrice;
+            const itemDiscount = Number(i.itemDiscount || 0);
 
             return {
                 item: matchedItem._id,
                 quantity,
+                itemDiscount,
                 priceAtTime
             };
         });
 
         const {
             subtotal,
-            discountAmount,
-            amountAfterDiscount,
+            totalItemDiscounts,
+            amountAfterItemDiscounts,
+            invoiceDiscountAmount,
+            totalDiscount,
+            amountAfterAllDiscounts,
             gstAmount,
-            totalAmount
-        } = calculateInvoice(invoiceItems, discount, gstRate);
+            totalAmount,
+            items: calculatedItems
+        } = calculateInvoice(invoiceItems, overAllDiscount, gstRate);
 
         const invoiceNumber = await generateInvoiceNumber(invoiceType, companyId, Invoice);
 
@@ -46,13 +52,22 @@ const createInvoice = async (req, res, next) => {
             invoiceNumber,
             company: companyId,
             customer,
-            items: invoiceItems,
-            discount,
+            items: calculatedItems.map(item => ({
+                item: item.item,
+                quantity: item.quantity,
+                itemDiscount: item.itemDiscount,
+                priceAtTime: item.priceAtTime
+            })),
+            overAllDiscount,
             subtotal,
+            totalDiscount,
+            amountAfterItemDiscounts,
+            amountAfterAllDiscounts,
             gstRate,
             gstAmount,
             totalAmount,
-            dueDate: new Date(dueDate)
+            dueDate: new Date(dueDate),
+            status: 'draft'
         });
 
         res.status(201).json({ success: true, data: newInvoice });
@@ -115,8 +130,6 @@ const updateInvoiceStatus = async (req, res, next) => {
         next(error);
     }
 };
-
-
 
 module.exports = {
     createInvoice,

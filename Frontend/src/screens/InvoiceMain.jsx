@@ -42,18 +42,18 @@ const initialInvoiceData = {
   billedTo: {
     companyName: "",
     address: { street: "", city: "", state: "", postalCode: "", country: "" },
-    gstin: "",
-    contact: "",
-    phone: "",
-    domain: "",
+    gstNumber: "",
+    contactPerson: "",
+    phoneNumber: "",
+    domainName: "",
   },
   billedBy: {
     companyName: "",
     address: "",
-    gstin: "",
-    pan: "",
-    contact: "",
-    phone: "",
+    gstNumber: "",
+    panNumber: "",
+    directorName: "",
+    phoneNumber: "",
   },
   invoiceDetails: {
     type: "SW",
@@ -62,6 +62,8 @@ const initialInvoiceData = {
     dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
       .toISOString()
       .split("T")[0],
+    currentFY: "",
+    fullInvoiceNumber: "",
   },
   items: [],
   paymentDetails: {
@@ -74,10 +76,14 @@ const initialInvoiceData = {
   logo: "",
   totals: {
     subtotal: 0,
-    discount: 0,
-    gst: 0,
-    grandTotal: 0,
-    addLessAdjustments: 0,
+    itemDiscounts: 0,
+    amountAfterItemDiscounts: 0,
+    discountPercentage: 0,
+    discountAmount: 0,
+    amountAfterAllDiscounts: 0,
+    gstRate: 18,
+    gstAmount: 0,
+    totalAmount: 0,
   },
 };
 
@@ -87,22 +93,26 @@ function InvoiceMain() {
   const [draftData, setDraftData] = useState(null);
   const [availableItems, setAvailableItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [pdfReady, setPdfReady] = useState(false);
   const [pdfGenerationError, setPdfGenerationError] = useState(null);
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  const [lastInvoiceNumber, setLastInvoiceNumber] = useState("0004"); // Initialize to one less than the default
-  const [currentFY, setCurrentFY] = useState(() => {
+  const [lastInvoiceNumber, setLastInvoiceNumber] = useState("0004");
+
+  const getCurrentFinancialYear = () => {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
     return month >= 4
       ? `${year}-${(year + 1).toString().slice(-2)}`
       : `${year - 1}-${year.toString().slice(-2)}`;
-  });
+  };
+
+  const [currentFY, setCurrentFY] = useState(getCurrentFinancialYear());
 
   const fetchLastInvoiceNumberFromBackend = async () => {
     try {
@@ -116,20 +126,41 @@ function InvoiceMain() {
         setLastInvoiceNumber(lastNumber);
         return lastNumber;
       }
-      return "0004"; // Default if no invoices exist in backend
+      return "0004";
     } catch (error) {
       console.error("Error fetching invoices:", error);
-      return "0004"; // Default on error
+      return "0004";
     }
   };
 
-  let nextNumber = null;
   const generateNextInvoiceNumber = (lastNumber) => {
-    nextNumber = String(parseInt(lastNumber || "0004", 10) + 1).padStart(
+    const nextNumber = String(parseInt(lastNumber || "0004", 10) + 1).padStart(
       4,
       "0"
     );
     return `ANO/${invoiceData.invoiceDetails.type}/${currentFY}/${nextNumber}`;
+  };
+
+  const resetForm = () => {
+    const nextInvoiceNumber = generateNextInvoiceNumber(lastInvoiceNumber);
+    setInvoiceData({
+      ...initialInvoiceData,
+      billedBy: invoiceData.billedBy,
+      paymentDetails: invoiceData.paymentDetails,
+      logo: invoiceData.logo,
+      invoiceDetails: {
+        ...initialInvoiceData.invoiceDetails,
+        number: nextInvoiceNumber.split("/").pop(),
+        fullInvoiceNumber: nextInvoiceNumber,
+        date: new Date().toISOString().split("T")[0],
+        dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
+        currentFY,
+      },
+    });
+    setPdfReady(false);
+    setSuccess(false);
   };
 
   useEffect(() => {
@@ -147,7 +178,6 @@ function InvoiceMain() {
             fetchLastInvoiceNumberFromBackend(),
           ]);
 
-        // Use the fetched last invoice number if available, otherwise use the initialized state
         const currentLastNumber =
           fetchedLastInvoiceNum !== "0004"
             ? fetchedLastInvoiceNum
@@ -159,17 +189,18 @@ function InvoiceMain() {
           billedBy: {
             companyName: companyData.data.companyName,
             address: formatAddress(companyData.data.address),
-            gstin: companyData.data.gstNumber,
-            pan: companyData.data.panNumber,
-            contact: companyData.data.directorName,
-            phone: companyData.data.phoneNumber,
+            gstNumber: companyData.data.gstNumber,
+            panNumber: companyData.data.panNumber,
+            directorName: companyData.data.directorName,
+            phoneNumber: companyData.data.phoneNumber,
           },
           paymentDetails: companyData.data.bankDetails,
           logo: companyData.data.logo,
           invoiceDetails: {
             ...prev.invoiceDetails,
-            number: nextNumber,
+            number: nextInvoiceNumber.split("/").pop(),
             currentFY,
+            fullInvoiceNumber: nextInvoiceNumber,
           },
         }));
 
@@ -197,15 +228,58 @@ function InvoiceMain() {
   const handleSave = (updatedData) => {
     if (activeSection === "items") {
       const subtotal = updatedData.items.reduce(
-        (sum, item) => sum + (item.amount || 0),
+        (sum, item) => sum + item.quantity * item.unitPrice,
         0
       );
+      const itemDiscounts = updatedData.items.reduce(
+        (sum, item) =>
+          sum +
+          (item.quantity * item.unitPrice * (item.discountPercentage || 0)) /
+            100,
+        0
+      );
+      const amountAfterItemDiscounts = subtotal - itemDiscounts;
+      const discountAmount =
+        (amountAfterItemDiscounts *
+          (updatedData.totals.discountPercentage || 0)) /
+        100;
+      const amountAfterAllDiscounts = amountAfterItemDiscounts - discountAmount;
+      const gstAmount =
+        (amountAfterAllDiscounts * (updatedData.totals.gstRate || 18)) / 100;
+      const totalAmount = amountAfterAllDiscounts + gstAmount;
+
       updatedData.totals = {
+        ...updatedData.totals,
         subtotal,
-        discount: 0,
-        gst: subtotal * 0.18,
-        grandTotal: subtotal * 1.18,
-        addLessAdjustments: 0,
+        itemDiscounts,
+        amountAfterItemDiscounts,
+        discountAmount,
+        amountAfterAllDiscounts,
+        gstAmount,
+        totalAmount,
+      };
+    } else if (activeSection === "totals") {
+      const subtotal = invoiceData.totals.subtotal;
+      const itemDiscounts = invoiceData.totals.itemDiscounts;
+      const amountAfterItemDiscounts = subtotal - itemDiscounts;
+      const discountAmount =
+        (amountAfterItemDiscounts *
+          (updatedData.totals.discountPercentage || 0)) /
+        100;
+      const amountAfterAllDiscounts = amountAfterItemDiscounts - discountAmount;
+      const gstAmount =
+        (amountAfterAllDiscounts * (updatedData.totals.gstRate || 18)) / 100;
+      const totalAmount = amountAfterAllDiscounts + gstAmount;
+
+      updatedData.totals = {
+        ...updatedData.totals,
+        subtotal,
+        itemDiscounts,
+        amountAfterItemDiscounts,
+        discountAmount,
+        amountAfterAllDiscounts,
+        gstAmount,
+        totalAmount,
       };
     }
     setInvoiceData(updatedData);
@@ -213,67 +287,69 @@ function InvoiceMain() {
     setDraftData(null);
   };
 
-  const handleGeneratePDF = async () => {
+  const handleSaveInvoice = async () => {
     try {
-      setSubmitting(true);
+      setSaving(true);
       setError(null);
       setSuccess(false);
       setPdfGenerationError(null);
 
       const payload = {
-        invoiceNumber: invoiceData.invoiceDetails.number,
+        invoiceNumber: invoiceData.invoiceDetails.fullInvoiceNumber,
         invoiceType: invoiceData.invoiceDetails.type,
         customer: {
           companyName: invoiceData.billedTo.companyName,
           address: invoiceData.billedTo.address,
-          gstNumber: invoiceData.billedTo.gstin,
-          phoneNumber: invoiceData.billedTo.phone,
-          contactPerson: invoiceData.billedTo.contact,
-          domainName: invoiceData.billedTo.domain,
+          gstNumber: invoiceData.billedTo.gstNumber,
+          phoneNumber: invoiceData.billedTo.phoneNumber,
+          contactPerson: invoiceData.billedTo.contactPerson,
+          domainName: invoiceData.billedTo.domainName,
         },
         items: invoiceData.items.map((item) => ({
-          itemId: item._id || item.id,
+          item: item._id || item.id,
           quantity: item.quantity,
+          itemDiscount: item.discountPercentage || 0,
+          priceAtTime: item.unitPrice,
         })),
-        discount: invoiceData.totals.discount,
-        gstRate: 18,
+        overAllDiscount: invoiceData.totals.discountPercentage || 0,
+        gstRate: invoiceData.totals.gstRate || 18,
         dueDate: invoiceData.invoiceDetails.dueDate,
+        subtotal: invoiceData.totals.subtotal || 0,
+        totalDiscount:
+          (invoiceData.totals.itemDiscounts || 0) +
+          (invoiceData.totals.discountAmount || 0),
+        amountAfterItemDiscounts:
+          invoiceData.totals.amountAfterItemDiscounts || 0,
+        amountAfterAllDiscounts:
+          invoiceData.totals.amountAfterAllDiscounts || 0,
+        gstAmount: invoiceData.totals.gstAmount || 0,
+        totalAmount: invoiceData.totals.totalAmount || 0,
       };
 
       const response = await createInvoice(payload);
-      if (response && response.data && response.data.newInvoiceNumber) {
-        const parts = response.data.newInvoiceNumber.split("/");
-        setLastInvoiceNumber(parts[parts.length - 1]);
-      } else {
-        // If newInvoiceNumber is not returned, refetch to get the updated last number
-        const latestInvoiceNumber = await fetchLastInvoiceNumberFromBackend();
-        setLastInvoiceNumber(latestInvoiceNumber);
-      }
-      setSuccess(true);
 
-      setInvoiceData({
-        ...initialInvoiceData,
-        billedBy: invoiceData.billedBy,
-        paymentDetails: invoiceData.paymentDetails,
-        logo: invoiceData.logo,
-        invoiceDetails: {
-          ...initialInvoiceData.invoiceDetails,
-          number: generateNextInvoiceNumber(
-            response?.data?.newInvoiceNumber?.split("/").pop() ||
-              lastInvoiceNumber
-          ),
-          date: new Date().toISOString().split("T")[0],
-          dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split("T")[0],
-        },
-      });
+      if (response && response.data) {
+        setSuccess(true);
+        const newInvoiceNumber = response.data.invoiceNumber;
+        const parts = newInvoiceNumber?.split("/");
+        if (parts) {
+          setLastInvoiceNumber(parts[parts.length - 1]);
+        }
+        setPdfReady(true);
+      } else {
+        throw new Error("Failed to create invoice");
+      }
     } catch (error) {
-      setError("Failed to generate PDF and save invoice");
-      setPdfGenerationError("Failed to generate PDF. Please try again.");
+      console.error("Invoice creation error:", error);
+      setError("Failed to save invoice to database");
+      setPdfGenerationError("Failed to save invoice. Please try again.");
     } finally {
-      setSubmitting(false);
+      setSaving(false);
     }
+  };
+
+  const handlePdfDownloaded = () => {
+    resetForm();
   };
 
   if (loading) {
@@ -308,7 +384,7 @@ function InvoiceMain() {
         )}
         {success && (
           <Alert severity="success" sx={{ mb: 2 }}>
-            Invoice created successfully!
+            Invoice saved successfully! You can now download the PDF.
           </Alert>
         )}
 
@@ -366,14 +442,14 @@ function InvoiceMain() {
             }}
           >
             <ErrorBoundary>
-              {" "}
-              {/* Wrap InvoicePreview with ErrorBoundary */}
               <InvoicePreview
                 data={invoiceData}
                 onSectionClick={setActiveSection}
                 isMobile={isMobile}
-                onGeneratePDF={handleGeneratePDF}
-                isGenerating={submitting}
+                onSaveInvoice={handleSaveInvoice}
+                onPdfDownloaded={handlePdfDownloaded}
+                isSaving={saving}
+                pdfReady={pdfReady}
               />
             </ErrorBoundary>
           </Box>

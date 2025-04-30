@@ -33,6 +33,7 @@ function InvoiceForm({
     description: "",
     quantity: 1,
     unitPrice: 0,
+    discountPercentage: 0,
     amount: 0,
   });
 
@@ -61,11 +62,21 @@ function InvoiceForm({
     const updatedItem = {
       ...updatedItems[index],
       [name]:
-        name === "quantity" || name === "unitPrice" ? Number(value) : value,
+        name === "quantity" ||
+        name === "unitPrice" ||
+        name === "discountPercentage"
+          ? Number(value)
+          : value,
     };
 
-    if (name === "quantity" || name === "unitPrice") {
-      updatedItem.amount = updatedItem.quantity * updatedItem.unitPrice;
+    if (
+      name === "quantity" ||
+      name === "unitPrice" ||
+      name === "discountPercentage"
+    ) {
+      const itemAmount = updatedItem.quantity * updatedItem.unitPrice;
+      updatedItem.amount =
+        itemAmount - (itemAmount * (updatedItem.discountPercentage || 0)) / 100;
     }
 
     updatedItems[index] = updatedItem;
@@ -80,10 +91,10 @@ function InvoiceForm({
       setNewItem({
         id: Date.now(),
         _id: selected._id,
-        name: selected.name,
         description: selected.description,
         quantity: 1,
         unitPrice: selected.unitPrice,
+        discountPercentage: 0,
         amount: selected.unitPrice,
       });
     }
@@ -94,11 +105,21 @@ function InvoiceForm({
     const updatedItem = {
       ...newItem,
       [name]:
-        name === "quantity" || name === "unitPrice" ? Number(value) : value,
+        name === "quantity" ||
+        name === "unitPrice" ||
+        name === "discountPercentage"
+          ? Number(value)
+          : value,
     };
 
-    if (name === "quantity" || name === "unitPrice") {
-      updatedItem.amount = updatedItem.quantity * updatedItem.unitPrice;
+    if (
+      name === "quantity" ||
+      name === "unitPrice" ||
+      name === "discountPercentage"
+    ) {
+      const itemAmount = updatedItem.quantity * updatedItem.unitPrice;
+      updatedItem.amount =
+        itemAmount - (itemAmount * (updatedItem.discountPercentage || 0)) / 100;
     }
 
     setNewItem(updatedItem);
@@ -112,6 +133,7 @@ function InvoiceForm({
       description: "",
       quantity: 1,
       unitPrice: 0,
+      discountPercentage: 0,
       amount: 0,
     });
     setAddingItem(true);
@@ -244,8 +266,8 @@ function InvoiceForm({
             <TextField
               fullWidth
               label="GSTIN"
-              name="gstin"
-              value={getCurrentValue("gstin")}
+              name="gstNumber"
+              value={getCurrentValue("gstNumber")}
               onChange={handleChange}
               required
               variant="outlined"
@@ -255,8 +277,8 @@ function InvoiceForm({
             <TextField
               fullWidth
               label="Contact Person"
-              name="contact"
-              value={getCurrentValue("contact")}
+              name="contactPerson"
+              value={getCurrentValue("contactPerson")}
               onChange={handleChange}
               required
               variant="outlined"
@@ -266,8 +288,8 @@ function InvoiceForm({
             <TextField
               fullWidth
               label="Phone"
-              name="phone"
-              value={getCurrentValue("phone")}
+              name="phoneNumber"
+              value={getCurrentValue("phoneNumber")}
               onChange={handleChange}
               required
               variant="outlined"
@@ -277,8 +299,8 @@ function InvoiceForm({
             <TextField
               fullWidth
               label="Domain"
-              name="domain"
-              value={getCurrentValue("domain")}
+              name="domainName"
+              value={getCurrentValue("domainName")}
               onChange={handleChange}
               variant="outlined"
             />
@@ -302,7 +324,7 @@ function InvoiceForm({
                 <Remove />
               </IconButton>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                {item.name || "Item"}
+                Item {index + 1}
               </Typography>
               <TextField
                 fullWidth
@@ -316,7 +338,7 @@ function InvoiceForm({
                 sx={{ mb: 2 }}
               />
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={12} sm={3}>
                   <TextField
                     fullWidth
                     label="Quantity"
@@ -328,7 +350,7 @@ function InvoiceForm({
                     required
                   />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={12} sm={3}>
                   <TextField
                     fullWidth
                     label="Unit Price (₹)"
@@ -345,7 +367,23 @@ function InvoiceForm({
                     required
                   />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={12} sm={3}>
+                  <TextField
+                    fullWidth
+                    label="Discount (%)"
+                    name="discountPercentage"
+                    type="number"
+                    value={getCurrentValue("discountPercentage", index)}
+                    onChange={(e) => handleItemChange(index, e)}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">%</InputAdornment>
+                      ),
+                    }}
+                    inputProps={{ step: "0.01", min: "0", max: "100" }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={3}>
                   <TextField
                     fullWidth
                     label="Amount (₹)"
@@ -377,7 +415,7 @@ function InvoiceForm({
                   </MenuItem>
                   {availableItems.map((item) => (
                     <MenuItem key={item._id} value={item._id}>
-                      {item.name} (₹{item.unitPrice})
+                      {item.description} (₹{item.unitPrice})
                     </MenuItem>
                   ))}
                 </Select>
@@ -397,7 +435,7 @@ function InvoiceForm({
                     sx={{ mb: 2 }}
                   />
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={4}>
+                    <Grid item xs={12} sm={3}>
                       <TextField
                         fullWidth
                         label="Quantity"
@@ -409,7 +447,7 @@ function InvoiceForm({
                         required
                       />
                     </Grid>
-                    <Grid item xs={12} sm={4}>
+                    <Grid item xs={12} sm={3}>
                       <TextField
                         fullWidth
                         label="Unit Price (₹)"
@@ -426,7 +464,23 @@ function InvoiceForm({
                         required
                       />
                     </Grid>
-                    <Grid item xs={12} sm={4}>
+                    <Grid item xs={12} sm={3}>
+                      <TextField
+                        fullWidth
+                        label="Discount (%)"
+                        name="discountPercentage"
+                        type="number"
+                        value={newItem.discountPercentage}
+                        onChange={handleNewItemChange}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">%</InputAdornment>
+                          ),
+                        }}
+                        inputProps={{ step: "0.01", min: "0", max: "100" }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
                       <TextField
                         fullWidth
                         label="Amount (₹)"
@@ -543,6 +597,137 @@ function InvoiceForm({
                 min:
                   getCurrentValue("date") ||
                   new Date().toISOString().split("T")[0],
+              }}
+            />
+          </Grid>
+        </Grid>
+      )}
+
+      {activeSection === "totals" && (
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Subtotal"
+              name="subtotal"
+              value={(formData.subtotal || 0).toFixed(2)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">₹</InputAdornment>
+                ),
+                readOnly: true,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Item Discounts"
+              name="itemDiscounts"
+              value={(formData.itemDiscounts || 0).toFixed(2)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">₹</InputAdornment>
+                ),
+                readOnly: true,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Amount After Item Discounts"
+              name="amountAfterItemDiscounts"
+              value={(formData.amountAfterItemDiscounts || 0).toFixed(2)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">₹</InputAdornment>
+                ),
+                readOnly: true,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Additional Discount (%)"
+              name="discountPercentage"
+              type="number"
+              value={formData.discountPercentage || 0}
+              onChange={handleChange}
+              InputProps={{
+                endAdornment: <InputAdornment position="end">%</InputAdornment>,
+              }}
+              inputProps={{ step: "0.01", min: "0", max: "100" }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Discount Amount"
+              name="discountAmount"
+              value={(formData.discountAmount || 0).toFixed(2)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">₹</InputAdornment>
+                ),
+                readOnly: true,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Amount After All Discounts"
+              name="amountAfterAllDiscounts"
+              value={(formData.amountAfterAllDiscounts || 0).toFixed(2)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">₹</InputAdornment>
+                ),
+                readOnly: true,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="GST Rate (%)"
+              name="gstRate"
+              type="number"
+              value={formData.gstRate || 18}
+              onChange={handleChange}
+              InputProps={{
+                endAdornment: <InputAdornment position="end">%</InputAdornment>,
+              }}
+              inputProps={{ step: "0.01", min: "0" }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="GST Amount"
+              name="gstAmount"
+              value={(formData.gstAmount || 0).toFixed(2)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">₹</InputAdornment>
+                ),
+                readOnly: true,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Total Amount"
+              name="totalAmount"
+              value={(formData.totalAmount || 0).toFixed(2)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">₹</InputAdornment>
+                ),
+                readOnly: true,
               }}
             />
           </Grid>
