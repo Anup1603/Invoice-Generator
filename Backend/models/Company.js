@@ -10,9 +10,13 @@ const CompanySchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    companyCode: {
+        type: String,
+        trim: true
+    },
     logo: {
         type: String,
-        default: 'https://cdn.prod.website-files.com/666b4fa7001989d530a5e4b6/666b8ff0771d918bbf8ebcf7_Transparent-p-500.png'
+        default: 'https://www.shutterstock.com/image-vector/image-icon-trendy-flat-style-600nw-643080895.jpg'
     },
     address: {
         street: String,

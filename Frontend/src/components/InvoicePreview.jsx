@@ -128,7 +128,7 @@ function InvoicePreview({
           >
             Invoice No:{" "}
             <strong>
-              ANO/
+              {data.billedBy?.companyCode || "N/A"}/
               {data.invoiceDetails?.type || "N/A"}/
               {data.invoiceDetails?.currentFY || "N/A"}/
               {data.invoiceDetails?.number || "N/A"}
@@ -760,7 +760,7 @@ function InvoicePreview({
             <div style={{ display: "none" }}>
               <PDFDownloadLink
                 document={pdfDocument}
-                fileName={`Invoice_ANO-${data.invoiceDetails?.type}-${data.invoiceDetails?.currentFY}-${data.invoiceDetails?.number}.pdf`}
+                fileName={`Invoice_${data.billedBy?.companyCode}-${data.invoiceDetails?.type}-${data.invoiceDetails?.currentFY}-${data.invoiceDetails?.number}.pdf`}
                 ref={pdfDownloadLinkRef}
                 onClick={handleDownloadComplete}
               >

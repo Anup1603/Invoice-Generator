@@ -36,6 +36,7 @@ const Profile = () => {
 
   const [formData, setFormData] = useState({
     companyName: "",
+    companyCode: "",
     address: {
       street: "",
       city: "",
@@ -55,6 +56,7 @@ const Profile = () => {
     directorName: "",
     phoneNumber: "",
     website: "",
+    logo: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -267,6 +269,20 @@ const Profile = () => {
                 />
               </Grid>
 
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Company Code"
+                  name="companyCode"
+                  value={formData.companyCode}
+                  onChange={handleChange}
+                  variant="outlined"
+                  size={isMobile ? "small" : "medium"}
+                  disabled={!isEditing}
+                  InputProps={{ readOnly: true }}
+                />
+              </Grid>
+
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
@@ -354,6 +370,20 @@ const Profile = () => {
                   onChange={handleChange}
                   variant="outlined"
                   size={isMobile ? "small" : "medium"}
+                  disabled={!isEditing}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Logo URL"
+                  name="logoUrl"
+                  value={formData.logo}
+                  onChange={handleChange}
+                  variant="outlined"
+                  size="medium"
+                  placeholder="https://example.com/logo.png"
                   disabled={!isEditing}
                 />
               </Grid>

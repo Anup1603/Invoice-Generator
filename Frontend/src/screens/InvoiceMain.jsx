@@ -49,6 +49,7 @@ const initialInvoiceData = {
   },
   billedBy: {
     companyName: "",
+    companyCode: "",
     address: "",
     gstNumber: "",
     panNumber: "",
@@ -138,7 +139,7 @@ function InvoiceMain() {
       4,
       "0"
     );
-    return `ANO/${invoiceData.invoiceDetails.type}/${currentFY}/${nextNumber}`;
+    return `${invoiceData.billedBy.companyCode}/${invoiceData.invoiceDetails.type}/${currentFY}/${nextNumber}`;
   };
 
   const resetForm = () => {
@@ -188,6 +189,7 @@ function InvoiceMain() {
           ...prev,
           billedBy: {
             companyName: companyData.data.companyName,
+            companyCode: companyData.data.companyCode,
             address: formatAddress(companyData.data.address),
             gstNumber: companyData.data.gstNumber,
             panNumber: companyData.data.panNumber,

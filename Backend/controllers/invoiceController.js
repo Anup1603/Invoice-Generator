@@ -1,5 +1,6 @@
 const Invoice = require('../models/Invoice');
 const Item = require('../models/Item');
+const Company = require('../models/Company');
 const generateInvoiceNumber = require('../utils/generateInvoiceNumber');
 const calculateInvoice = require('../utils/calculateInvoice');
 
@@ -46,7 +47,9 @@ const createInvoice = async (req, res, next) => {
             items: calculatedItems
         } = calculateInvoice(invoiceItems, overAllDiscount, gstRate);
 
-        const invoiceNumber = await generateInvoiceNumber(invoiceType, companyId, Invoice);
+        // Add Company model import at the top of your file:
+        // const Company = require('../models/Company');
+        const invoiceNumber = await generateInvoiceNumber(invoiceType, companyId, Invoice, Company);
 
         const newInvoice = await Invoice.create({
             invoiceNumber,
@@ -131,9 +134,22 @@ const updateInvoiceStatus = async (req, res, next) => {
     }
 };
 
+const deleteAllInvoices = async (req, res, next) => {
+    try {
+        const companyId = req.user.company;
+        await Invoice.deleteMany({ company: companyId });
+        res.status(200).json({ success: true, message: 'All invoices deleted successfully.' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+
 module.exports = {
     createInvoice,
     getInvoices,
     getInvoiceById,
-    updateInvoiceStatus
+    updateInvoiceStatus,
+    deleteAllInvoices
 };

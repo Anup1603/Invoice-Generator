@@ -16,7 +16,6 @@ import {
   DialogContent,
   DialogActions,
   Avatar,
-  Badge,
   Drawer,
   List,
   ListItem,
@@ -31,6 +30,7 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import PersonIcon from "@mui/icons-material/Person";
+import BusinessIcon from "@mui/icons-material/Business";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 
 const theme = createTheme({
@@ -73,15 +73,6 @@ const theme = createTheme({
       },
     },
   },
-  breakpoints: {
-    values: {
-      xs: 0,
-      sm: 600,
-      md: 900,
-      lg: 1200,
-      xl: 1536,
-    },
-  },
 });
 
 const navItems = [
@@ -99,8 +90,8 @@ const navItems = [
   { text: "Profile", path: "/invoice-board/profile", icon: <PersonIcon /> },
 ];
 
-function InvoiceBoard() {
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); 
+function InvoiceBoard({ companyData }) {
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [loading, setLoading] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -143,11 +134,29 @@ function InvoiceBoard() {
   const drawer = (
     <Box>
       <Toolbar sx={{ justifyContent: "center", py: 3 }}>
-        <img
-          src="/Anocloud logo.png"
-          alt="Logo"
-          style={{ height: 40, objectFit: "contain" }}
-        />
+        {companyData.logo ? (
+          <Box
+            component="img"
+            src={companyData.logo}
+            alt="Company Logo"
+            sx={{
+              height: 40,
+              maxWidth: 200,
+              objectFit: "contain",
+              borderRadius: 1,
+            }}
+          />
+        ) : (
+          <Avatar
+            sx={{
+              width: 40,
+              height: 40,
+              bgcolor: theme.palette.primary.main,
+            }}
+          >
+            <BusinessIcon />
+          </Avatar>
+        )}
       </Toolbar>
       <Divider />
       <List>
@@ -207,7 +216,7 @@ function InvoiceBoard() {
       >
         <CircularProgress size={60} thickness={4} />
         <Typography variant="h6" color="text.secondary">
-          Logging out...
+          Loading...
         </Typography>
       </Box>
     );
@@ -234,26 +243,38 @@ function InvoiceBoard() {
                   <MenuIcon />
                 </IconButton>
               )}
-              <Typography
-                variant="h6"
-                component="div"
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  height: "100%",
-                }}
-              >
-                <img
-                  src="/Anocloud logo.png"
-                  alt="Logo"
-                  style={{
-                    height: 40,
-                    objectFit: "contain",
-                    background: "transparent",
-                    display: "block",
-                  }}
-                />
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                {companyData.logo ? (
+                  <Box
+                    component="img"
+                    src={companyData.logo}
+                    alt="Company Logo"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "";
+                      setCompanyData((prev) => ({ ...prev, logo: "" }));
+                    }}
+                    sx={{
+                      height: 40,
+                      maxWidth: 200,
+                      objectFit: "contain",
+                      mr: 2,
+                    }}
+                  />
+                ) : (
+                  <Avatar
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      bgcolor: theme.palette.primary.light,
+                      mr: 2,
+                    }}
+                  >
+                    <BusinessIcon />
+                  </Avatar>
+                )}
+                {/* <Typography variant="h6">{companyData.name}</Typography> */}
+              </Box>
             </Box>
 
             {!isMobile && (
@@ -280,20 +301,6 @@ function InvoiceBoard() {
             )}
 
             <Box sx={{ display: "flex", alignItems: "center" }}>
-              {/* <Badge
-                overlap="circular"
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                variant="dot"
-                color="success"
-                sx={{ mr: 2 }}
-              >
-                <Avatar
-                  alt="User Avatar"
-                  src="/static/images/avatar/1.jpg"
-                  sx={{ width: 36, height: 36 }}
-                />
-              </Badge> */}
-
               <IconButton
                 color="inherit"
                 onClick={handleLogoutClick}
@@ -309,13 +316,12 @@ function InvoiceBoard() {
           </Toolbar>
         </AppBar>
 
-        {/* Mobile Drawer - Only shows on mobile (not tablets) */}
         <Drawer
           variant="temporary"
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile
+            keepMounted: true,
           }}
           sx={{
             display: { xs: "block", sm: "none" },
@@ -328,11 +334,10 @@ function InvoiceBoard() {
           {drawer}
         </Drawer>
 
-        <Box component="main" sx={{ flexGrow: 1, p: 1 }}>
-          <Outlet />
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <Outlet context={{ companyData }} />
         </Box>
 
-        {/* Logout Confirmation Dialog */}
         <Dialog
           open={logoutOpen}
           onClose={handleLogoutCancel}

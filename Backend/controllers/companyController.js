@@ -1,11 +1,16 @@
 const Company = require('../models/Company');
+const Invoice = require('../models/Invoice');
+const Item = require('../models/Item');
 const User = require('../models/User');
+const mongoose = require('mongoose');
+
 
 // Complete company profile (step 2)
 const completeProfile = async (req, res, next) => {
     try {
         const {
             companyName,
+            companyCode,
             phoneNumber,
             gstNumber,
             panNumber,
@@ -29,6 +34,7 @@ const completeProfile = async (req, res, next) => {
             { user: req.user._id },
             {
                 companyName,
+                companyCode,
                 phoneNumber,
                 gstNumber,
                 panNumber,
@@ -141,8 +147,77 @@ const updateProfile = async (req, res, next) => {
     }
 };
 
+const deleteProfile = async (req, res, next) => {
+    try {
+        const company = await Company.findOneAndDelete({ user: req.user._id });
+
+        if (!company) {
+            return res.status(404).json({
+                success: false,
+                message: 'Company not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Company profile deleted successfully'
+        });
+    } catch (err) {
+        console.error('Delete profile error:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete company profile',
+            error: err.message
+        });
+    }
+};
+
+const deleteProfileAndRelatedData = async (req, res, next) => {
+    try {
+        const userId = req.user._id;
+
+        // 1. First find the company
+        const company = await Company.findOne({ user: userId });
+
+        if (!company) {
+            return res.status(404).json({
+                success: false,
+                message: 'Company not found'
+            });
+        }
+
+        // 2. Delete all related data
+        await Promise.all([
+            Item.deleteMany({ company: company._id }),
+            Invoice.deleteMany({ company: company._id }),
+            // Add other related models here
+        ]);
+
+        // 3. Delete the company and user
+        await Promise.all([
+            Company.findByIdAndDelete(company._id),
+            User.findByIdAndDelete(userId)
+        ]);
+
+        res.json({
+            success: true,
+            message: 'Company, user, and all related data deleted successfully'
+        });
+    } catch (err) {
+        console.error('Delete profile error:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete company and related data',
+            error: err.message
+        });
+    }
+};
+
+
 module.exports = {
     completeProfile,
     getProfile,
-    updateProfile
+    updateProfile,
+    deleteProfile,
+    deleteProfileAndRelatedData
 };

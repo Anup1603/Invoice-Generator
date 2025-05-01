@@ -415,7 +415,7 @@ function InvoiceForm({
                   </MenuItem>
                   {availableItems.map((item) => (
                     <MenuItem key={item._id} value={item._id}>
-                      {item.description} (₹{item.unitPrice})
+                      {item.name} (₹{item.unitPrice})
                     </MenuItem>
                   ))}
                 </Select>

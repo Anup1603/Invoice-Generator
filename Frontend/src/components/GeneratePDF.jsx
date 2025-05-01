@@ -280,6 +280,7 @@ const GeneratePDF = memo(({ data }) => {
 
   const {
     companyName: billedByCompanyName = "",
+    companyCode: billedByCompanyCode = "",
     address: billedByAddress = "",
     gstNumber: billedByGstNumber = "",
     panNumber: billedByPanNumber = "",
@@ -346,7 +347,7 @@ const GeneratePDF = memo(({ data }) => {
             <Text style={styles.leftText}>
               Invoice Number:{" "}
               <Text style={{ fontWeight: "bold" }}>
-                {`ANO/${invoiceType}/${invoiceCurrentFY}/${invoiceNumber}`}
+                {`${billedByCompanyCode}/${invoiceType}/${invoiceCurrentFY}/${invoiceNumber}`}
               </Text>
             </Text>
             <Text style={styles.rightText}>

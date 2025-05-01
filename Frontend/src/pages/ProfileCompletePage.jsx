@@ -19,7 +19,13 @@ import {
   DialogTitle,
   DialogContent,
 } from "@mui/material";
-import { Logout, Business, AccountBalance, Info } from "@mui/icons-material";
+import {
+  Logout,
+  Business,
+  AccountBalance,
+  Info,
+  Image,
+} from "@mui/icons-material";
 import axios from "../axiosInstence";
 import { deepPurple, teal, orange } from "@mui/material/colors";
 
@@ -27,6 +33,7 @@ const ProfileCompletePage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     companyName: "",
+    companyCode: "",
     address: {
       street: "",
       city: "",
@@ -46,6 +53,7 @@ const ProfileCompletePage = () => {
     directorName: "",
     phoneNumber: "",
     website: "",
+    logo: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -214,6 +222,19 @@ const ProfileCompletePage = () => {
                     onChange={handleChange}
                     variant="outlined"
                     size="medium"
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Company Code"
+                    name="companyCode"
+                    value={formData.companyCode}
+                    onChange={handleChange}
+                    variant="outlined"
+                    size="medium"
+                    placeholder="eg: ABC"
                   />
                 </Grid>
 
@@ -419,6 +440,32 @@ const ProfileCompletePage = () => {
                     onChange={handleChange}
                     variant="outlined"
                     size="medium"
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Company Logo Section */}
+            <Paper elevation={2} sx={{ p: 3, mb: 4, bgcolor: "#f5f7fa" }}>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                <Image color="primary" sx={{ mr: 1 }} />
+                <Typography variant="h6" color="primary">
+                  Company Logo
+                </Typography>
+              </Box>
+              <Divider sx={{ mb: 3 }} />
+
+              <Grid container spacing={3} alignItems="center">
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Logo URL"
+                    name="logo"
+                    value={formData.logo}
+                    onChange={handleChange}
+                    variant="outlined"
+                    size="medium"
+                    placeholder="https://example.com/logo.png"
                   />
                 </Grid>
               </Grid>
