@@ -80,21 +80,21 @@ const InvoiceList = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const loadInvoices = async () => {
+    try {
+      const data = await fetchInvoiceData();
+      console.log(data.data);
+      setInvoices(data.data);
+      setFilteredInvoices(data.data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message || "Failed to fetch invoices");
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const loadInvoices = async () => {
-      try {
-        const data = await fetchInvoiceData();
-        setInvoices(data.data);
-        setFilteredInvoices(data.data);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message || "Failed to fetch invoices");
-        setLoading(false);
-      }
-    };
-
     loadInvoices();
-  }, [invoices]);
+  }, []);
 
   useEffect(() => {
     const results = invoices.filter(
@@ -404,6 +404,7 @@ const InvoiceList = () => {
                       <TableCell>Description</TableCell>
                       <TableCell align="right">Unit Price</TableCell>
                       <TableCell align="right">Qty</TableCell>
+                      <TableCell align="right">Discount %</TableCell>
                       <TableCell align="right">Amount</TableCell>
                     </TableRow>
                   </TableHead>
@@ -415,8 +416,9 @@ const InvoiceList = () => {
                           ₹{item.item.unitPrice.toFixed(2)}
                         </TableCell>
                         <TableCell align="right">{item.quantity}</TableCell>
+                        <TableCell align="right">{item.itemDiscount}</TableCell>
                         <TableCell align="right">
-                          ₹{item.priceAtTime.toFixed(2)}
+                          ₹{selectedInvoice.subtotal.toFixed(2)}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -424,15 +426,68 @@ const InvoiceList = () => {
                 </Table>
               </TableContainer>
 
+              {/* Totals Section - Updated to match your data structure */}
               <Box sx={{ mt: 3, textAlign: "right" }}>
+                {/* Subtotal - Always shown */}
                 <Typography variant="body1">
                   Subtotal: ₹{selectedInvoice.subtotal.toFixed(2)}
                 </Typography>
+
+                {/* Item Discount - Only shown if there are item discounts */}
+                {selectedInvoice.items.some(
+                  (item) => item.itemDiscount > 0
+                ) && (
+                  <>
+                    <Typography variant="body1" sx={{ color: "error.main" }}>
+                      Item Discounts: - ₹
+                      {(
+                        selectedInvoice.subtotal -
+                        selectedInvoice.amountAfterItemDiscounts
+                      ).toFixed(2)}
+                    </Typography>
+                    <Typography variant="body1">
+                      Amount After Item Discounts: ₹
+                      {selectedInvoice.amountAfterItemDiscounts.toFixed(2)}
+                    </Typography>
+                  </>
+                )}
+
+                {/* Overall Discount - Only shown if there's an overall discount */}
+                {selectedInvoice.overAllDiscount > 0 && (
+                  <>
+                    <Typography variant="body1" sx={{ color: "error.main" }}>
+                      Overall Discount ({selectedInvoice.overAllDiscount}%): - ₹
+                      {(
+                        selectedInvoice.amountAfterItemDiscounts -
+                        selectedInvoice.amountAfterAllDiscounts
+                      ).toFixed(2)}
+                    </Typography>
+                    <Typography variant="body1">
+                      Amount After All Discounts: ₹
+                      {selectedInvoice.amountAfterAllDiscounts.toFixed(2)}
+                    </Typography>
+                  </>
+                )}
+
+                {/* GST - Always shown */}
                 <Typography variant="body1">
                   GST ({selectedInvoice.gstRate}%): ₹
                   {selectedInvoice.gstAmount.toFixed(2)}
                 </Typography>
-                <Typography variant="h6" sx={{ mt: 1 }}>
+
+                {/* Total Discount - Only shown if there are any discounts */}
+                {selectedInvoice.totalDiscount > 0 && (
+                  <Typography variant="body1" sx={{ color: "error.main" }}>
+                    Total Discounts: - ₹
+                    {selectedInvoice.totalDiscount.toFixed(2)}
+                  </Typography>
+                )}
+
+                {/* Divider before total */}
+                <Divider sx={{ my: 1 }} />
+
+                {/* Total - Always shown */}
+                <Typography variant="h6" sx={{ mt: 1, fontWeight: "bold" }}>
                   Total: ₹{selectedInvoice.totalAmount.toFixed(2)}
                 </Typography>
               </Box>

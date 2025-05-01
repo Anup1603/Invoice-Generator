@@ -134,7 +134,7 @@ function InvoiceBoard({ companyData }) {
   const drawer = (
     <Box>
       <Toolbar sx={{ justifyContent: "center", py: 3 }}>
-        {companyData.logo ? (
+        {companyData?.logo ? (
           <Box
             component="img"
             src={companyData.logo}
@@ -244,16 +244,11 @@ function InvoiceBoard({ companyData }) {
                 </IconButton>
               )}
               <Box sx={{ display: "flex", alignItems: "center" }}>
-                {companyData.logo ? (
+                {companyData?.logo ? (
                   <Box
                     component="img"
                     src={companyData.logo}
                     alt="Company Logo"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "";
-                      setCompanyData((prev) => ({ ...prev, logo: "" }));
-                    }}
                     sx={{
                       height: 40,
                       maxWidth: 200,

@@ -150,7 +150,7 @@ const Profile = () => {
       <Paper
         elevation={isMobile ? 1 : 4}
         sx={{
-          p: isMobile ? 2 : 4,
+          p: isMobile ? 1 : 4,
           borderRadius: 2,
         }}
       >
@@ -265,7 +265,6 @@ const Profile = () => {
                   variant="outlined"
                   size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
-                  InputProps={{ readOnly: true }}
                 />
               </Grid>
 
@@ -279,7 +278,6 @@ const Profile = () => {
                   variant="outlined"
                   size={isMobile ? "small" : "medium"}
                   disabled={!isEditing}
-                  InputProps={{ readOnly: true }}
                 />
               </Grid>
 

@@ -134,12 +134,12 @@ function InvoicePreview({
               {data.invoiceDetails?.number || "N/A"}
             </strong>
           </Typography>
-          <Typography
+          {/* <Typography
             variant="body1"
             sx={{ fontSize: matchesSM ? "0.875rem" : "1rem" }}
           >
             Type: <strong>{data.invoiceDetails?.type || "N/A"}</strong>
-          </Typography>
+          </Typography> */}
           <Typography
             variant="body1"
             sx={{ fontSize: matchesSM ? "0.875rem" : "1rem" }}

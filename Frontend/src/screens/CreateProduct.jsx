@@ -217,7 +217,7 @@ const CreateProduct = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 1 }}>
       <Box
         sx={{
           display: "flex",
