@@ -213,7 +213,7 @@ const InvoiceList = () => {
         component={Paper}
         sx={{
           mt: 3,
-          maxHeight: "calc(100vh - 200px)",
+          maxHeight: "calc(90vh - 200px)",
           overflow: "auto",
         }}
       >

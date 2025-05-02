@@ -139,14 +139,24 @@ const Profile = () => {
   }
 
   return (
-    <Container
-      maxWidth="lg"
+    <Box
       sx={{
-        mt: isMobile ? 2 : 4,
-        mb: isMobile ? 2 : 4,
-        p: isMobile ? 1 : 2,
+        p: isMobile ? 1 : isTablet ? 3 : 3,
+        width: "100%",
+        maxWidth: "100vw",
+        overflowX: "hidden",
+        boxSizing: "border-box",
+        height: "84vh",
       }}
     >
+      {/* <Container
+        maxWidth="lg"
+        sx={{
+          mt: isMobile ? 2 : 4,
+          mb: isMobile ? 2 : 4,
+          p: isMobile ? 1 : 2,
+        }}
+      > */}
       <Paper
         elevation={isMobile ? 1 : 4}
         sx={{
@@ -528,7 +538,8 @@ const Profile = () => {
           </Paper>
         </form>
       </Paper>
-    </Container>
+      {/* </Container> */}
+    </Box>
   );
 };
 

@@ -264,137 +264,134 @@ const CreateProduct = () => {
       )}
 
       {/* Items List */}
-      <Paper
-        elevation={2}
+
+      <TableContainer
+        component={Paper}
         sx={{
-          borderRadius: 2,
-          overflow: "hidden",
-          border: `1px solid ${theme.palette.divider}`,
+          mt: 3,
+          maxHeight: "calc(96vh - 200px)",
+          overflow: "auto",
         }}
       >
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow
-                sx={{
-                  backgroundColor: theme.palette.grey[100],
-                }}
-              >
-                <TableCell sx={{ fontWeight: 600 }}>#</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Product</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 600 }}>
-                  Unit Price
-                </TableCell>
-                <TableCell align="center" sx={{ fontWeight: 600 }}>
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {items.length > 0 ? (
-                items.map((item, index) => (
-                  <TableRow
-                    key={item._id}
-                    hover
-                    sx={{
-                      "&:last-child td, &:last-child th": { border: 0 },
-                    }}
-                  >
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 2 }}
-                      >
-                        <Avatar
-                          sx={{
-                            bgcolor: "#c44dff",
-                            width: 36,
-                            height: 36,
-                            fontSize: 14,
-                          }}
-                        >
-                          {getInitials(item.name)}
-                        </Avatar>
-                        <Typography variant="body1" fontWeight={500}>
-                          {item.name}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow
+              sx={{
+                backgroundColor: theme.palette.grey[100],
+              }}
+            >
+              <TableCell sx={{ fontWeight: 600 }}>#</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Product</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Unit Price
+              </TableCell>
+              <TableCell align="center" sx={{ fontWeight: 600 }}>
+                Actions
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {items.length > 0 ? (
+              items.map((item, index) => (
+                <TableRow
+                  key={item._id}
+                  hover
+                  sx={{
+                    "&:last-child td, &:last-child th": { border: 0 },
+                  }}
+                >
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Avatar
                         sx={{
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
+                          bgcolor: "#c44dff",
+                          width: 36,
+                          height: 36,
+                          fontSize: 14,
                         }}
                       >
-                        {item.description}
+                        {getInitials(item.name)}
+                      </Avatar>
+                      <Typography variant="body1" fontWeight={500}>
+                        {item.name}
                       </Typography>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Chip
-                        label={item.unitPrice.toFixed(2)}
-                        color="primary"
-                        variant="outlined"
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell align="center">
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "center",
-                          gap: 1,
-                        }}
-                      >
-                        <Tooltip title="Edit">
-                          <IconButton
-                            onClick={() => handleOpenEditDialog(item)}
-                            sx={{
-                              color: theme.palette.primary.main,
-                              "&:hover": {
-                                backgroundColor: "#d4c7eb",
-                              },
-                            }}
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Delete">
-                          <IconButton
-                            onClick={() => handleOpenDeleteDialog(item)}
-                            sx={{
-                              color: "#ff4d4d",
-                              "&:hover": {
-                                backgroundColor: "#ffcccc",
-                              },
-                            }}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                    <Typography variant="body1" color="text.secondary">
-                      No products found. Click "Add New Product" to create one.
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {item.description}
                     </Typography>
                   </TableCell>
+                  <TableCell align="right">
+                    <Chip
+                      label={item.unitPrice.toFixed(2)}
+                      color="primary"
+                      variant="outlined"
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        gap: 1,
+                      }}
+                    >
+                      <Tooltip title="Edit">
+                        <IconButton
+                          onClick={() => handleOpenEditDialog(item)}
+                          sx={{
+                            color: theme.palette.primary.main,
+                            "&:hover": {
+                              backgroundColor: "#d4c7eb",
+                            },
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <IconButton
+                          onClick={() => handleOpenDeleteDialog(item)}
+                          sx={{
+                            color: "#ff4d4d",
+                            "&:hover": {
+                              backgroundColor: "#ffcccc",
+                            },
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No products found. Click "Add New Product" to create one.
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {/* Add New Product Dialog */}
       <Dialog

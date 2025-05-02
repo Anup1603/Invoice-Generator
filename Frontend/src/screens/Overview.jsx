@@ -177,6 +177,7 @@ const Overview = () => {
         maxWidth: "100vw",
         overflowX: "hidden",
         boxSizing: "border-box",
+        height: "84vh",
       }}
     >
       <Typography
@@ -226,6 +227,7 @@ const Overview = () => {
             <Card
               elevation={0}
               sx={{
+                width: "40vh",
                 borderRadius: 3,
                 background: card.bgColor,
                 boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
@@ -281,17 +283,19 @@ const Overview = () => {
       {/* Second Section - Payments and Chart */}
       <Grid container spacing={3} sx={{ width: "100%", mb: 3 }}>
         {/* Payments Section - 40% width */}
-        <Grid item xs={12} md={5} lg={4}>
+        <Grid item xs={12} md={4.5}>
           <Paper
             elevation={0}
             sx={{
               borderRadius: 3,
               p: 2,
               height: "100%",
+              minHeight: 450,
               boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
               border: `1px solid ${theme.palette.divider}`,
               display: "flex",
               flexDirection: "column",
+              width: isMobile ? "40vh" : "50vh",
             }}
           >
             <Tabs
@@ -398,6 +402,7 @@ const Overview = () => {
                               borderRadius: 2,
                               fontSize: "0.75rem",
                               fontWeight: 600,
+                              ml: isMobile ? 2 : 4,
                             }}
                           >
                             {invoice.status?.toUpperCase() || "UNKNOWN"}
@@ -486,6 +491,7 @@ const Overview = () => {
                             borderRadius: 2,
                             fontSize: "0.75rem",
                             fontWeight: 600,
+                            ml: isMobile ? 2 : 4,
                           }}
                         >
                           OVERDUE
@@ -522,21 +528,22 @@ const Overview = () => {
             elevation={0}
             sx={{
               borderRadius: 3,
-              p: 3,
+              p: isMobile ? 2 : 6,
               height: "100%",
               boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
               border: `1px solid ${theme.palette.divider}`,
               display: "flex",
               flexDirection: "column",
+              width: isMobile ? "40vh" : "auto",
             }}
           >
             <Box
               display="flex"
               justifyContent="space-between"
               alignItems="center"
-              mb={3}
+              mb={4}
               flexDirection={isMobile ? "column" : "row"}
-              gap={isMobile ? 2 : 0}
+              gap={isMobile ? 2 : 30}
             >
               <Box display="flex" alignItems="center">
                 <ReceiptIcon color="primary" sx={{ mr: 1.5, fontSize: 32 }} />
@@ -559,6 +566,7 @@ const Overview = () => {
                   "& .MuiSelect-select": {
                     py: 1.25,
                   },
+                  ml: isMobile ? 0 : 4,
                 }}
               >
                 {availableYears.map((year) => (
