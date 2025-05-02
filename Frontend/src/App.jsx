@@ -16,6 +16,7 @@ import InvoiceList from "./screens/InvoiceList";
 import CreateProduct from "./screens/CreateProduct";
 import { fetchCompanyDetails } from "./invoiceApi";
 import { CircularProgress, Box } from "@mui/material";
+import Overview from "./screens/Overview";
 
 function App() {
   const [companyData, setCompanyData] = useState(null);
@@ -78,6 +79,7 @@ function App() {
           />
           <Route path="invoices" element={<InvoiceList />} />
           <Route path="create-product" element={<CreateProduct />} />
+          <Route path="overview" element={<Overview />} />
         </Route>
 
         {/* Redirect invalid routes */}

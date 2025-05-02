@@ -132,7 +132,7 @@ const Profile = () => {
       >
         <CircularProgress size={60} thickness={4} />
         <Typography variant="h6" color="text.secondary">
-          Loading Company Data...
+          Loading Company ...
         </Typography>
       </Box>
     );

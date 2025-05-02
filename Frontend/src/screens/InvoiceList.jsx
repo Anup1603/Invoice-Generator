@@ -83,7 +83,6 @@ const InvoiceList = () => {
   const loadInvoices = async () => {
     try {
       const data = await fetchInvoiceData();
-      console.log(data.data);
       setInvoices(data.data);
       setFilteredInvoices(data.data);
       setLoading(false);
@@ -462,6 +461,13 @@ const InvoiceList = () => {
                         selectedInvoice.amountAfterAllDiscounts
                       ).toFixed(2)}
                     </Typography>
+                    {/* Total Discount - Only shown if there are any discounts */}
+                    {selectedInvoice.totalDiscount > 0 && (
+                      <Typography variant="body1" sx={{ color: "error.main" }}>
+                        Total Discounts (both item and overall): - ₹
+                        {selectedInvoice.totalDiscount.toFixed(2)}
+                      </Typography>
+                    )}
                     <Typography variant="body1">
                       Amount After All Discounts: ₹
                       {selectedInvoice.amountAfterAllDiscounts.toFixed(2)}
@@ -474,14 +480,6 @@ const InvoiceList = () => {
                   GST ({selectedInvoice.gstRate}%): ₹
                   {selectedInvoice.gstAmount.toFixed(2)}
                 </Typography>
-
-                {/* Total Discount - Only shown if there are any discounts */}
-                {selectedInvoice.totalDiscount > 0 && (
-                  <Typography variant="body1" sx={{ color: "error.main" }}>
-                    Total Discounts: - ₹
-                    {selectedInvoice.totalDiscount.toFixed(2)}
-                  </Typography>
-                )}
 
                 {/* Divider before total */}
                 <Divider sx={{ my: 1 }} />

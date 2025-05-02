@@ -31,6 +31,7 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import PersonIcon from "@mui/icons-material/Person";
 import BusinessIcon from "@mui/icons-material/Business";
+import DashboardIcon from "@mui/icons-material/Dashboard";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 
 const theme = createTheme({
@@ -88,6 +89,11 @@ const navItems = [
     icon: <InventoryIcon />,
   },
   { text: "Profile", path: "/invoice-board/profile", icon: <PersonIcon /> },
+  {
+    text: "Overview",
+    path: "/invoice-board/overview",
+    icon: <DashboardIcon />,
+  },
 ];
 
 function InvoiceBoard({ companyData }) {
@@ -329,7 +335,7 @@ function InvoiceBoard({ companyData }) {
           {drawer}
         </Drawer>
 
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Box component="main" sx={{ flexGrow: 1, p: isMobile ? 1.5 : 3 }}>
           <Outlet context={{ companyData }} />
         </Box>
 
