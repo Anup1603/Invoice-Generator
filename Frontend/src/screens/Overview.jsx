@@ -95,14 +95,14 @@ const Overview = () => {
     (invoice) => invoice.status === "overdue"
   );
 
-  // Prepare monthly invoice data for chart
+  // Prepare monthly invoice data for chart (only non-cancelled invoices)
   const getMonthlyInvoiceData = () => {
     const months = Array(12)
       .fill(0)
       .map((_, i) => i + 1);
     const monthlyCounts = months.map((month) => {
       const monthInvoices = invoiceData.filter((invoice) => {
-        if (!invoice.createdAt) return false;
+        if (!invoice.createdAt || invoice.status === "cancelled") return false;
         const invoiceDate = new Date(invoice.createdAt);
         return (
           invoiceDate.getFullYear() === selectedYear &&
@@ -291,6 +291,7 @@ const Overview = () => {
               p: 2,
               height: "100%",
               minHeight: 450,
+              maxHeight: 450, // Fixed height
               boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
               border: `1px solid ${theme.palette.divider}`,
               display: "flex",
@@ -364,13 +365,21 @@ const Overview = () => {
                         >
                           <ListItemText
                             primary={
-                              <Typography
-                                variant="subtitle1"
-                                fontWeight="medium"
-                              >
-                                {invoice.customer?.companyName ||
-                                  "Unknown Client"}
-                              </Typography>
+                              <>
+                                <Typography
+                                  variant="subtitle1"
+                                  fontWeight="medium"
+                                >
+                                  {invoice.customer?.companyName ||
+                                    "Unknown Client"}
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  {invoice.invoiceNumber}
+                                </Typography>
+                              </>
                             }
                             secondary={`Due: ₹${(
                               invoice.totalAmount || 0
@@ -461,10 +470,21 @@ const Overview = () => {
                       >
                         <ListItemText
                           primary={
-                            <Typography variant="subtitle1" fontWeight="medium">
-                              {invoice.customer?.companyName ||
-                                "Unknown Client"}
-                            </Typography>
+                            <>
+                              <Typography
+                                variant="subtitle1"
+                                fontWeight="medium"
+                              >
+                                {invoice.customer?.companyName ||
+                                  "Unknown Client"}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {invoice.invoiceNumber}
+                              </Typography>
+                            </>
                           }
                           secondary={
                             <>
@@ -529,7 +549,7 @@ const Overview = () => {
             sx={{
               borderRadius: 3,
               p: isMobile ? 2 : 6,
-              height: "100%",
+              height: isMobile ? 450 : "95%",
               boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
               border: `1px solid ${theme.palette.divider}`,
               display: "flex",

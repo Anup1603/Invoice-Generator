@@ -37,6 +37,29 @@ const statusOptions = [
   { value: "cancelled", label: "Cancelled", color: "#ff6666" },
 ];
 
+// Utility function to check if an invoice should be marked overdue
+const shouldMarkOverdue = (invoice) => {
+  const now = new Date();
+  const dueDate = new Date(invoice.dueDate);
+
+  // Clear time components to compare just dates
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const invoiceDueDate = new Date(
+    dueDate.getFullYear(),
+    dueDate.getMonth(),
+    dueDate.getDate()
+  );
+
+  // Only these statuses should be considered for overdue
+  const eligibleStatuses = ["draft", "sent"];
+
+  return (
+    eligibleStatuses.includes(invoice.status) && // Status must be draft or sent
+    today > invoiceDueDate && // Current date must be strictly after due date
+    invoice.status !== "overdue" // Not already overdue
+  );
+};
+
 // ✅ Get background color directly from custom hex
 const getStatusColor = (status) => {
   const option = statusOptions.find((opt) => opt.value === status);
@@ -83,14 +106,35 @@ const InvoiceList = () => {
   const loadInvoices = async () => {
     try {
       const data = await fetchInvoiceData();
-      setInvoices(data.data);
-      setFilteredInvoices(data.data);
+
+      // Check for invoices that should be marked overdue
+      const updatedInvoices = await Promise.all(
+        data.data.map(async (invoice) => {
+          if (shouldMarkOverdue(invoice)) {
+            try {
+              await updateInvoiceStatus(invoice._id, "overdue");
+              return { ...invoice, status: "overdue" };
+            } catch (err) {
+              console.error(
+                `Failed to update status for invoice ${invoice._id}:`,
+                err
+              );
+              return invoice; // Return original if update fails
+            }
+          }
+          return invoice;
+        })
+      );
+
+      setInvoices(updatedInvoices);
+      setFilteredInvoices(updatedInvoices);
       setLoading(false);
     } catch (err) {
       setError(err.message || "Failed to fetch invoices");
       setLoading(false);
     }
   };
+
   useEffect(() => {
     loadInvoices();
   }, []);
